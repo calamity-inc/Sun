@@ -19,7 +19,7 @@ int entry(std::vector<std::string>&& args, bool console)
 	auto exe = name;
 	exe.append(".exe");
 
-	soup::Compiler::compileExecutable(cpp, exe);
+	std::cout << soup::Compiler::compileExecutable(cpp, exe);
 
 	return 0;
 }
