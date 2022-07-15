@@ -1,0 +1,1 @@
+const char* message = "Hello, world!";
