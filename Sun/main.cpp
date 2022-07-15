@@ -11,14 +11,8 @@
 	return name;
 }
 
-int entry(std::vector<std::string>&& args, bool console)
+static bool make_executable(const std::vector<std::string>& cpps)
 {
-	if (args.size() < 2)
-	{
-		std::cout << "Syntax: sun <.cpp file paths ...>" << std::endl;
-		return 1;
-	}
-
 	std::vector<std::string> objects{};
 
 	if (!std::filesystem::is_directory("int"))
@@ -27,8 +21,7 @@ int entry(std::vector<std::string>&& args, bool console)
 	}
 
 	std::cout << "Compiling..." << std::endl;
-	args.erase(args.begin());
-	for (const auto& cpp : args)
+	for (const auto& cpp : cpps)
 	{
 		auto name = remove_extension(cpp);
 
@@ -46,9 +39,9 @@ int entry(std::vector<std::string>&& args, bool console)
 	std::cout << "Linking..." << std::endl;
 
 	std::string exe{};
-	if (args.size() == 1)
+	if (cpps.size() == 1)
 	{
-		exe = remove_extension(args.at(0));
+		exe = remove_extension(cpps.at(0));
 	}
 	else
 	{
@@ -62,6 +55,34 @@ int entry(std::vector<std::string>&& args, bool console)
 	if (!linkout.empty())
 	{
 		std::cout << linkout;
+		return false;
+	}
+
+	return true;
+}
+
+int entry(std::vector<std::string>&& args, bool console)
+{
+	args.erase(args.begin());
+
+	if (args.empty())
+	{
+		for (const auto& f : std::filesystem::directory_iterator("."))
+		{
+			if (f.is_regular_file() && f.path().extension() == ".cpp")
+			{
+				std::string path = f.path().string();
+				if (path.substr(0, 2) == ".\\")
+				{
+					path.erase(0, 2);
+				}
+				args.emplace_back(std::move(path));
+			}
+		}
+	}
+
+	if (!make_executable(args))
+	{
 		return 1;
 	}
 
