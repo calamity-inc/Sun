@@ -11,7 +11,7 @@
 	return name;
 }
 
-static bool make_executable(const std::vector<std::string>& cpps)
+[[nodiscard]] static std::vector<std::string> compile(const std::vector<std::string>& cpps)
 {
 	std::vector<std::string> objects{};
 
@@ -20,7 +20,6 @@ static bool make_executable(const std::vector<std::string>& cpps)
 		std::filesystem::create_directory("int");
 	}
 
-	std::cout << "Compiling..." << std::endl;
 	for (const auto& cpp : cpps)
 	{
 		auto name = remove_extension(cpp);
@@ -36,34 +35,28 @@ static bool make_executable(const std::vector<std::string>& cpps)
 		objects.emplace_back(o);
 	}
 
-	std::cout << "Linking..." << std::endl;
-
-	std::string exe{};
-	if (cpps.size() == 1)
-	{
-		exe = remove_extension(cpps.at(0));
-	}
-	else
-	{
-		exe = std::filesystem::current_path().filename().string();
-	}
-#if SOUP_WINDOWS
-	exe.append(".exe");
-#endif
-
-	auto linkout = soup::Compiler::makeExecutable(objects, exe);
-	if (!linkout.empty())
-	{
-		std::cout << linkout;
-		return false;
-	}
-
-	return true;
+	return objects;
 }
 
 int entry(std::vector<std::string>&& args, bool console)
 {
 	args.erase(args.begin());
+
+	bool opt_static = false;
+	for (auto i = args.begin(); i != args.end(); )
+	{
+		if(*i == "-static"
+			|| *i == "--static"
+			)
+		{
+			opt_static = true;
+			i = args.erase(i);
+		}
+		else
+		{
+			++i;
+		}
+	}
 
 	if (args.empty())
 	{
@@ -81,11 +74,38 @@ int entry(std::vector<std::string>&& args, bool console)
 		}
 	}
 
-	if (!make_executable(args))
+	std::cout << "Compiling..." << std::endl;
+
+	auto objects = compile(args);
+
+	std::cout << "Linking..." << std::endl;
+
+	std::string outname{};
+	if (args.size() == 1)
 	{
-		return 1;
+		outname = remove_extension(args.at(0));
+	}
+	else
+	{
+		outname = std::filesystem::current_path().filename().string();
 	}
 
+	std::string linkout;
+	if (opt_static)
+	{
+		outname.append(soup::Compiler::getStaticLibraryExtension());
+		linkout = soup::Compiler::makeStaticLibrary(objects, outname);
+	}
+	else
+	{
+		outname.append(soup::Compiler::getExecutableExtension());
+		linkout = soup::Compiler::makeExecutable(objects, outname);
+	}
+	if (!linkout.empty())
+	{
+		std::cout << linkout;
+		return 1;
+	}
 	return 0;
 }
 
