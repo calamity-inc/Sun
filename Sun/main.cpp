@@ -1,8 +1,11 @@
 #include <filesystem>
 #include <iostream>
+#include <mutex>
 
+#include <soup/AtomicStack.hpp>
 #include <soup/Compiler.hpp>
 #include <soup/main.hpp>
+#include <soup/Thread.hpp>
 
 [[nodiscard]] static std::string remove_extension(const std::string& file)
 {
@@ -11,30 +14,79 @@
 	return name;
 }
 
+struct SharedCompileData
+{
+	std::mutex output_mutex;
+	soup::AtomicStack<std::string> cpps;
+	soup::AtomicStack<std::string> objects;
+};
+
 [[nodiscard]] static std::vector<std::string> compile(const std::vector<std::string>& cpps)
 {
-	std::vector<std::string> objects{};
-
 	if (!std::filesystem::is_directory("int"))
 	{
 		std::filesystem::create_directory("int");
 	}
 
-	for (const auto& cpp : cpps)
+	SharedCompileData data;
+	for (auto i = cpps.crbegin(); i != cpps.crend(); ++i)
 	{
-		auto name = remove_extension(cpp);
-
-		std::cout << name << std::endl;
-
-		std::string o = "int/";
-		o.append(name);
-		o.append(".o");
-
-		std::cout << soup::Compiler::makeObject(cpp, o);
-
-		objects.emplace_back(o);
+		data.cpps.emplace_front(std::string(*i));
 	}
 
+	size_t threads_to_spin_up = (std::thread::hardware_concurrency() - 1);
+	if (threads_to_spin_up < 1)
+	{
+		threads_to_spin_up = 1;
+	}
+	if (threads_to_spin_up > cpps.size())
+	{
+		threads_to_spin_up = cpps.size();
+	}
+
+	std::vector<soup::UniquePtr<soup::Thread>> threads{};
+	while (--threads_to_spin_up != 0)
+	{
+		threads.emplace_back(soup::make_unique<soup::Thread>([](soup::Capture&& cap)
+		{
+			SharedCompileData& data = *cap.get<SharedCompileData*>();
+			while (true)
+			{
+				auto node = data.cpps.pop_front();
+				if (!node)
+				{
+					break;
+				}
+				auto cpp = *node;
+
+				auto name = remove_extension(cpp);
+
+				data.output_mutex.lock();
+				std::cout << name << std::endl;
+				data.output_mutex.unlock();
+
+				std::string o = "int/";
+				o.append(name);
+				o.append(".o");
+
+				std::cout << soup::Compiler::makeObject(cpp, o);
+
+				data.objects.emplace_front(std::move(o));
+			}
+		}, &data));
+	}
+	soup::Thread::awaitCompletion(threads);
+
+	std::vector<std::string> objects{};
+	while (true)
+	{
+		auto node = data.objects.pop_front();
+		if (!node)
+		{
+			break;
+		}
+		objects.emplace_back(std::move(*node));
+	}
 	return objects;
 }
 
