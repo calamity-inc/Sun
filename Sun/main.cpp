@@ -17,12 +17,13 @@
 
 struct SharedCompileData
 {
-	std::mutex output_mutex;
+	const soup::Compiler* compiler;
 	soup::AtomicStack<std::string> cpps;
 	soup::AtomicStack<std::string> objects;
+	std::mutex output_mutex;
 };
 
-[[nodiscard]] static std::vector<std::string> compile(const std::vector<std::string>& cpps)
+[[nodiscard]] static std::vector<std::string> compile(const soup::Compiler& compiler, const std::vector<std::string>& cpps)
 {
 	if (!std::filesystem::is_directory("int"))
 	{
@@ -30,6 +31,7 @@ struct SharedCompileData
 	}
 
 	SharedCompileData data;
+	data.compiler = &compiler;
 	for (auto i = cpps.crbegin(); i != cpps.crend(); ++i)
 	{
 		data.cpps.emplace_front(std::string(*i));
@@ -70,8 +72,7 @@ struct SharedCompileData
 				o.append(name);
 				o.append(".o");
 
-				soup::Compiler compiler;
-				std::cout << compiler.makeObject(cpp, o);
+				std::cout << data.compiler->makeObject(cpp, o);
 
 				data.objects.emplace_front(std::move(o));
 			}
@@ -135,9 +136,11 @@ int entry(std::vector<std::string>&& args, bool console)
 		}
 	}
 
+	soup::Compiler compiler;
+
 	std::cout << "Compiling..." << std::endl;
 
-	auto objects = compile(args);
+	auto objects = compile(compiler, args);
 
 	std::cout << "Linking..." << std::endl;
 
@@ -151,7 +154,6 @@ int entry(std::vector<std::string>&& args, bool console)
 		outname = std::filesystem::current_path().filename().string();
 	}
 
-	soup::Compiler compiler;
 	std::string linkout;
 	if (opt_static)
 	{
