@@ -46,7 +46,7 @@ struct SharedCompileData
 	}
 
 	std::vector<soup::UniquePtr<soup::Thread>> threads{};
-	while (--threads_to_spin_up != 0)
+	while (threads_to_spin_up-- != 0)
 	{
 		threads.emplace_back(soup::make_unique<soup::Thread>([](soup::Capture&& cap)
 		{
