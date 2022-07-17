@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 #include <mutex>
+#include <thread>
 
 #include <soup/AtomicStack.hpp>
 #include <soup/Compiler.hpp>
