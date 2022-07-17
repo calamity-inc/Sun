@@ -70,7 +70,8 @@ struct SharedCompileData
 				o.append(name);
 				o.append(".o");
 
-				std::cout << soup::Compiler::makeObject(cpp, o);
+				soup::Compiler compiler;
+				std::cout << compiler.makeObject(cpp, o);
 
 				data.objects.emplace_front(std::move(o));
 			}
@@ -150,16 +151,17 @@ int entry(std::vector<std::string>&& args, bool console)
 		outname = std::filesystem::current_path().filename().string();
 	}
 
+	soup::Compiler compiler;
 	std::string linkout;
 	if (opt_static)
 	{
 		outname.append(soup::Compiler::getStaticLibraryExtension());
-		linkout = soup::Compiler::makeStaticLibrary(objects, outname);
+		linkout = compiler.makeStaticLibrary(objects, outname);
 	}
 	else
 	{
 		outname.append(soup::Compiler::getExecutableExtension());
-		linkout = soup::Compiler::makeExecutable(objects, outname);
+		linkout = compiler.makeExecutable(objects, outname);
 	}
 	if (!linkout.empty())
 	{
