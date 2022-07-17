@@ -64,15 +64,20 @@ struct SharedCompileData
 
 				auto name = remove_extension(cpp);
 
-				data.output_mutex.lock();
-				std::cout << name << "\n";
-				data.output_mutex.unlock();
-
 				std::string o = "int/";
 				o.append(name);
 				o.append(".o");
 
-				std::cout << data.compiler->makeObject(cpp, o);
+				if (!std::filesystem::exists(o)
+					|| std::filesystem::last_write_time(cpp) > std::filesystem::last_write_time(o)
+					)
+				{
+					data.output_mutex.lock();
+					std::cout << name << "\n";
+					data.output_mutex.unlock();
+
+					std::cout << data.compiler->makeObject(cpp, o);
+				}
 
 				data.objects.emplace_front(std::move(o));
 			}
