@@ -19,8 +19,8 @@ struct SharedCompileData
 {
 	const soup::Compiler* compiler;
 	soup::AtomicStack<std::string> cpps;
-	soup::AtomicStack<std::string> objects;
 	std::mutex output_mutex;
+	soup::AtomicStack<std::string> objects;
 };
 
 [[nodiscard]] static std::vector<std::string> compile(const soup::Compiler& compiler, const std::vector<std::string>& cpps)
