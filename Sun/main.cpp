@@ -60,7 +60,7 @@ struct SharedCompileData
 				{
 					break;
 				}
-				auto cpp = *node;
+				std::string& cpp = *node;
 
 				auto name = remove_extension(cpp);
 
