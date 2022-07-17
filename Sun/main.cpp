@@ -143,8 +143,6 @@ int entry(std::vector<std::string>&& args, bool console)
 
 	soup::Compiler compiler;
 
-	std::cout << "Compiling..." << "\n";
-
 	auto objects = compile(compiler, args);
 
 	std::cout << "Linking..." << "\n";
