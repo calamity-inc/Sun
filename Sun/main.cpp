@@ -65,7 +65,7 @@ struct SharedCompileData
 				auto name = remove_extension(cpp);
 
 				data.output_mutex.lock();
-				std::cout << name << std::endl;
+				std::cout << name << "\n";
 				data.output_mutex.unlock();
 
 				std::string o = "int/";
@@ -138,11 +138,11 @@ int entry(std::vector<std::string>&& args, bool console)
 
 	soup::Compiler compiler;
 
-	std::cout << "Compiling..." << std::endl;
+	std::cout << "Compiling..." << "\n";
 
 	auto objects = compile(compiler, args);
 
-	std::cout << "Linking..." << std::endl;
+	std::cout << "Linking..." << "\n";
 
 	std::string outname{};
 	if (args.size() == 1)
