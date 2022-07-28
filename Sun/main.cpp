@@ -124,19 +124,7 @@ int entry(std::vector<std::string>&& args, bool console)
 		{
 			if (f.is_regular_file() && f.path().extension() == ".cpp")
 			{
-				std::string path = f.path().string();
-#if SOUP_WINDOWS
-				if (path.substr(0, 2) == ".\\")
-				{
-					path.erase(0, 2);
-				}
-#else
-				if (path.substr(0, 2) == "./")
-				{
-					path.erase(0, 2);
-				}
-#endif
-				args.emplace_back(std::move(path));
+				args.emplace_back(f.path().filename().string());
 			}
 		}
 	}
