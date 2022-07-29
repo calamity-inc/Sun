@@ -19,6 +19,17 @@ or individual files:
 +utils.cpp
 ```
 
+## Remove source files
+
+You can remove previously-added source files by using the `-` operator.
+
+For example, if you want to compile all .cpp files except for wasm.cpp:
+
+```
++*.cpp
+-wasm.cpp
+```
+
 ## Compile to static library
 
 Use the `sun set static` to indicate that the project is a static library.

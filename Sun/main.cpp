@@ -183,6 +183,23 @@ int entry(std::vector<std::string>&& args, bool console)
 			continue;
 		}
 
+		if (line.at(0) == '-')
+		{
+			line.erase(0, 1);
+			matchFiles(std::move(line), cpps, [](soup::AtomicStack<std::string>& cpps, std::string&& file)
+			{
+				for (auto node = cpps.head.load(); node != nullptr; node = node->next)
+				{
+					if (node->data == file)
+					{
+						cpps.erase(node);
+						break;
+					}
+				}
+			});
+			continue;
+		}
+
 		if (line == "static")
 		{
 			opt_static = true;
