@@ -97,6 +97,28 @@ struct SharedCompileData
 	return objects;
 }
 
+static void matchFiles(std::string&& query, soup::AtomicStack<std::string>& cpps, void(*callback)(soup::AtomicStack<std::string>&, std::string&&))
+{
+	if (query.find('*') == std::string::npos)
+	{
+		callback(cpps, std::move(query));
+	}
+	else
+	{
+		for (const auto& f : std::filesystem::directory_iterator("."))
+		{
+			if (f.is_regular_file())
+			{
+				std::string fn = f.path().filename().string();
+				if (soup::StringMatch::wildcard(query, fn, 1))
+				{
+					callback(cpps, std::move(fn));
+				}
+			}
+		}
+	}
+}
+
 int entry(std::vector<std::string>&& args, bool console)
 {
 	SOUP_IF_UNLIKELY (args.size() > 1)
@@ -154,24 +176,10 @@ int entry(std::vector<std::string>&& args, bool console)
 		if (line.at(0) == '+')
 		{
 			line.erase(0, 1);
-			if (line.find('*') == std::string::npos)
+			matchFiles(std::move(line), cpps, [](soup::AtomicStack<std::string>& cpps, std::string&& file)
 			{
-				cpps.emplace_front(std::move(line));
-			}
-			else
-			{
-				for (const auto& f : std::filesystem::directory_iterator("."))
-				{
-					if (f.is_regular_file())
-					{
-						std::string fn = f.path().filename().string();
-						if (soup::StringMatch::wildcard(line, fn, 1))
-						{
-							cpps.emplace_front(std::move(fn));
-						}
-					}
-				}
-			}
+				cpps.emplace_front(std::move(file));
+			});
 			continue;
 		}
 
