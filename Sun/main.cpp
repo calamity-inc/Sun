@@ -217,7 +217,12 @@ int entry(std::vector<std::string>&& args, bool console)
 	}
 	else
 	{
-		outname = std::filesystem::current_path().filename().string();
+		auto p = std::filesystem::current_path();
+		if (p.filename().string() == "src")
+		{
+			p = p.parent_path();
+		}
+		outname = p.filename().string();
 	}
 
 	// Compile
