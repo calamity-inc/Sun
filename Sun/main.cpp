@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <thread>
@@ -6,6 +7,7 @@
 #include <soup/AtomicStack.hpp>
 #include <soup/Compiler.hpp>
 #include <soup/main.hpp>
+#include <soup/StringMatch.hpp>
 #include <soup/Thread.hpp>
 
 [[nodiscard]] static std::string remove_extension(const std::string& file)
@@ -23,7 +25,7 @@ struct SharedCompileData
 	soup::AtomicStack<std::string> objects;
 };
 
-[[nodiscard]] static std::vector<std::string> compile(const soup::Compiler& compiler, const std::vector<std::string>& cpps)
+[[nodiscard]] static std::vector<std::string> compile(const soup::Compiler& compiler, soup::AtomicStack<std::string>&& cpps)
 {
 	if (!std::filesystem::is_directory("int"))
 	{
@@ -32,19 +34,16 @@ struct SharedCompileData
 
 	SharedCompileData data;
 	data.compiler = &compiler;
-	for (auto i = cpps.crbegin(); i != cpps.crend(); ++i)
-	{
-		data.cpps.emplace_front(std::string(*i));
-	}
+	data.cpps = std::move(cpps);
 
 	size_t threads_to_spin_up = (std::thread::hardware_concurrency() - 1);
 	if (threads_to_spin_up < 1)
 	{
 		threads_to_spin_up = 1;
 	}
-	if (threads_to_spin_up > cpps.size())
+	if (threads_to_spin_up > data.cpps.size())
 	{
-		threads_to_spin_up = cpps.size();
+		threads_to_spin_up = data.cpps.size();
 	}
 
 	std::vector<soup::UniquePtr<soup::Thread>> threads{};
@@ -100,51 +99,108 @@ struct SharedCompileData
 
 int entry(std::vector<std::string>&& args, bool console)
 {
-	args.erase(args.begin());
-
-	bool opt_static = false;
-	for (auto i = args.begin(); i != args.end(); )
+	SOUP_IF_UNLIKELY (args.size() > 1)
 	{
-		if(*i == "-static"
-			|| *i == "--static"
-			)
+		SOUP_IF_UNLIKELY (args.at(1) != "set")
+		{
+			std::cout << "Unknown argument: " << args.at(1) << std::endl;
+			return 1;
+		}
+
+		SOUP_IF_UNLIKELY (!std::filesystem::is_regular_file(".sun"))
+		{
+			std::cout << "No .sun file found in the working directory." << std::endl;
+			return 1;
+		}
+
+		SOUP_IF_UNLIKELY (args.size() <= 2)
+		{
+			std::cout << "Set what?" << std::endl;
+			return 1;
+		}
+
+		std::ofstream of(".sun", std::ios::app);
+		of << "static\n";
+
+		std::cout << "Done." << std::endl;
+
+		return 0;
+	}
+	// Just 'sun' was used...
+
+	// Config Data
+	soup::AtomicStack<std::string> cpps{};
+	bool opt_static = false;
+
+	// Read Config
+	SOUP_IF_UNLIKELY (!std::filesystem::is_regular_file(".sun"))
+	{
+		std::ofstream of(".sun");
+		of << "+*.cpp\n";
+		
+		std::cout << "No .sun file found in the working directory; I've created one for you." << std::endl;
+		std::cout << "Run 'sun' again to build your project." << std::endl;
+		std::cout << "Run 'sun set static' to set this project to be a static library." << std::endl;
+		return 2;
+	}
+	std::ifstream in(".sun");
+	for (std::string line; std::getline(in, line); )
+	{
+		SOUP_IF_UNLIKELY (line.empty())
+		{
+			continue;
+		}
+
+		if (line.at(0) == '+')
+		{
+			line.erase(0, 1);
+			if (line.find('*') == std::string::npos)
+			{
+				cpps.emplace_front(std::move(line));
+			}
+			else
+			{
+				for (const auto& f : std::filesystem::directory_iterator("."))
+				{
+					if (f.is_regular_file())
+					{
+						std::string fn = f.path().filename().string();
+						if (soup::StringMatch::wildcard(line, fn, 1))
+						{
+							cpps.emplace_front(std::move(fn));
+						}
+					}
+				}
+			}
+			continue;
+		}
+
+		if (line == "static")
 		{
 			opt_static = true;
-			i = args.erase(i);
+			continue;
 		}
-		else
-		{
-			++i;
-		}
+
+		std::cout << "Ignoring line with unknown data: " << line << "\n";
 	}
 
-	if (args.empty())
-	{
-		for (const auto& f : std::filesystem::directory_iterator("."))
-		{
-			if (f.is_regular_file() && f.path().extension() == ".cpp")
-			{
-				args.emplace_back(f.path().filename().string());
-			}
-		}
-	}
-
-	soup::Compiler compiler;
-
-	auto objects = compile(compiler, args);
-
-	std::cout << "Linking..." << "\n";
-
+	// Guess Project Name
 	std::string outname{};
-	if (args.size() == 1)
+	if (cpps.size() == 1)
 	{
-		outname = remove_extension(args.at(0));
+		outname = remove_extension(cpps.head.load()->data);
 	}
 	else
 	{
 		outname = std::filesystem::current_path().filename().string();
 	}
 
+	// Compile
+	soup::Compiler compiler;
+	auto objects = compile(compiler, std::move(cpps));
+
+	// Link
+	std::cout << "Linking..." << "\n";
 	std::string linkout;
 	if (opt_static)
 	{
