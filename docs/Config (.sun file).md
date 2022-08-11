@@ -35,3 +35,9 @@ For example, if you want to compile all .cpp files except for wasm.cpp:
 Use the `sun set static` to indicate that the project is a static library.
 
 Internally, this will simply add a line that says `static` to the .sun file.
+
+## Dependencies
+
+Add `require REL_PATH` to the .sun file to add a dependency to your project.
+
+Then, when you run Sun, it will build your dependencies first, and finally build your project with relevant compiler and linker include flags.
