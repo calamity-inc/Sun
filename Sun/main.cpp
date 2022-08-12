@@ -246,7 +246,13 @@ struct Project
 						std::cout << name << "\n";
 						data.output_mutex.unlock();
 
-						std::cout << data.compiler->makeObject(cpp.string(), o);
+						auto msg = data.compiler->makeObject(cpp.string(), o);
+						if (!msg.empty())
+						{
+							data.output_mutex.lock();
+							std::cout << std::move(msg);
+							data.output_mutex.unlock();
+						}
 					}
 
 					data.objects.emplace_front(std::move(o));
