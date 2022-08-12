@@ -24,11 +24,17 @@
 	return name.substr(0, name.length() - ext.length());
 }
 
+struct Dependency
+{
+	std::filesystem::path dir;
+	std::filesystem::path include_dir;
+};
+
 struct Project
 {
 	std::filesystem::path dir;
 
-	std::vector<std::filesystem::path> dependencies{};
+	std::vector<Dependency> dependencies{};
 	soup::AtomicStack<std::filesystem::path> cpps{};
 	bool opt_static = false;
 
@@ -90,9 +96,23 @@ struct Project
 
 			if (line.substr(0, 8) == "require ")
 			{
-				auto p = dir;
-				p /= line.substr(8);
-				dependencies.emplace_back(std::move(p));
+				Dependency dep;
+				dep.dir = dir;
+				auto sep = line.find(" include_dir=");
+				if (sep == std::string::npos)
+				{
+					dep.dir /= line.substr(8);
+					dep.include_dir = dep.dir;
+				}
+				else
+				{
+					dep.dir /= line.substr(8, sep - 8);
+					dep.include_dir = dir;
+					dep.include_dir = line.substr(sep + 13);
+				}
+				dep.dir = std::filesystem::absolute(dep.dir);
+				dep.include_dir = std::filesystem::absolute(dep.include_dir);
+				dependencies.emplace_back(std::move(dep));
 				continue;
 			}
 
@@ -161,10 +181,10 @@ struct Project
 		{
 			for (const auto& dep : dependencies)
 			{
-				Project dep_proj(dep);
+				Project dep_proj(dep.dir);
 				SOUP_IF_UNLIKELY(!dep_proj.load())
 				{
-					std::cout << "Failed to load dependency: " << dep << "\n";
+					std::cout << "Failed to load dependency: " << dep.dir << "\n";
 					exit(E_BADDEPEND);
 				}
 				auto dep_name = dep_proj.getName();
@@ -182,7 +202,7 @@ struct Project
 				// Add relevant args to our compiler
 				{
 					std::string arg_include = "-I";
-					arg_include.append(dep.string());
+					arg_include.append(dep.include_dir.string());
 					compiler.extra_args.emplace_back(std::move(arg_include));
 				}
 				{
