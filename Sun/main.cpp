@@ -130,24 +130,24 @@ struct Project
 
 	[[nodiscard]] std::string getName() const
 	{
-		std::string outname = name;
-		if (outname.empty())
+		if (!name.empty())
 		{
-			if (cpps.size() == 1)
+			return name;
+		}
+		if (cpps.size() == 1)
+		{
+			auto name = get_name_no_extension(cpps.head.load()->data);
+			if (name != "main")
 			{
-				outname = get_name_no_extension(cpps.head.load()->data);
-			}
-			else
-			{
-				auto p = dir;
-				if (p.filename().string() == "src")
-				{
-					p = p.parent_path();
-				}
-				outname = p.filename().string();
+				return name;
 			}
 		}
-		return outname;
+		auto p = dir;
+		if (p.filename().string() == "src")
+		{
+			p = p.parent_path();
+		}
+		return p.filename().string();
 	}
 
 	void matchFiles(std::string&& query, soup::AtomicStack<std::filesystem::path>& cpps, void(*callback)(soup::AtomicStack<std::filesystem::path>&, std::filesystem::path)) const
