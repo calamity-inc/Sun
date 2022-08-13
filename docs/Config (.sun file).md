@@ -43,3 +43,7 @@ Add `require REL_PATH` to the .sun file to add a dependency to your project.
 Then, when you run Sun, it will build your dependencies first, and finally build your project with relevant compiler and linker include flags.
 
 If the include directory differs from source directory, you can use `require REL_PATH include_dir=REL_PATH`.
+
+## Project name
+
+Sun will make a guess about your project name based on the file structure, but you can override this adding `name ...` to the .sun file.

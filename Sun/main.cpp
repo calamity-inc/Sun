@@ -33,7 +33,7 @@ struct Dependency
 struct Project
 {
 	std::filesystem::path dir;
-
+	std::string name;
 	std::vector<Dependency> dependencies{};
 	soup::AtomicStack<std::filesystem::path> cpps{};
 	bool opt_static = false;
@@ -88,9 +88,9 @@ struct Project
 				continue;
 			}
 
-			if (line == "static")
+			if (line.substr(0, 5) == "name ")
 			{
-				opt_static = true;
+				name = line.substr(5);
 				continue;
 			}
 
@@ -116,6 +116,12 @@ struct Project
 				continue;
 			}
 
+			if (line == "static")
+			{
+				opt_static = true;
+				continue;
+			}
+
 			std::cout << "Ignoring line with unknown data: " << line << "\n";
 		}
 		return true;
@@ -123,19 +129,22 @@ struct Project
 
 	[[nodiscard]] std::string getName() const
 	{
-		std::string outname{};
-		if (cpps.size() == 1)
+		std::string outname = name;
+		if (outname.empty())
 		{
-			outname = get_name_no_extension(cpps.head.load()->data);
-		}
-		else
-		{
-			auto p = dir;
-			if (p.filename().string() == "src")
+			if (cpps.size() == 1)
 			{
-				p = p.parent_path();
+				outname = get_name_no_extension(cpps.head.load()->data);
 			}
-			outname = p.filename().string();
+			else
+			{
+				auto p = dir;
+				if (p.filename().string() == "src")
+				{
+					p = p.parent_path();
+				}
+				outname = p.filename().string();
+			}
 		}
 		return outname;
 	}
