@@ -7,6 +7,7 @@
 #include <soup/AtomicStack.hpp>
 #include <soup/Compiler.hpp>
 #include <soup/main.hpp>
+#include <soup/os.hpp>
 #include <soup/StringMatch.hpp>
 #include <soup/Thread.hpp>
 
@@ -350,6 +351,15 @@ struct Project
 	}
 };
 
+static int syntax_set()
+{
+	std::cout << "\n";
+	std::cout << "  sun set name ...   Set project name\n";
+	std::cout << "  sun set static     Set project to be a static library\n";
+	std::cout << "\n";
+	return E_BADARG;
+}
+
 int entry(std::vector<std::string>&& args, bool console)
 {
 #if false
@@ -358,11 +368,17 @@ int entry(std::vector<std::string>&& args, bool console)
 	std::cout << "Time's up.\n";
 #endif
 
-	SOUP_IF_UNLIKELY (args.size() > 1)
+	if (args.size() > 1
+		&& args.at(1) != "run"
+		)
 	{
 		SOUP_IF_UNLIKELY (args.at(1) != "set")
 		{
-			std::cout << "Unknown argument: " << args.at(1) << std::endl;
+			std::cout << "\n";
+			std::cout << "  sun                Build project\n";
+			std::cout << "  sun run ...        Build & run project\n";
+			std::cout << "  sun set ...        Modify project\n";
+			std::cout << "\n";
 			return E_BADARG;
 		}
 
@@ -374,15 +390,28 @@ int entry(std::vector<std::string>&& args, bool console)
 
 		SOUP_IF_UNLIKELY (args.size() <= 2)
 		{
-			std::cout << "Set what?" << std::endl;
-			return E_BADARG;
+			return syntax_set();
 		}
 
 		std::ofstream of(".sun", std::ios::app);
-		of << "static\n";
+		if (args.at(2) == "name")
+		{
+			SOUP_IF_UNLIKELY(args.size() <= 3)
+			{
+				return syntax_set();
+			}
+			of << "name " << args.at(3) << "\n";
+		}
+		else if (args.at(2) == "static")
+		{
+			of << "static\n";
+		}
+		else
+		{
+			return syntax_set();
+		}
 
 		std::cout << "Done." << std::endl;
-
 		return E_OK;
 	}
 
@@ -399,7 +428,22 @@ int entry(std::vector<std::string>&& args, bool console)
 		std::cout << "Run 'sun set static' to set this project to be a static library." << std::endl;
 		return E_NEWSUNFILE;
 	}
-	return proj.compileAndLink();
+	const auto proj_name = proj.getName();
+	SOUP_IF_UNLIKELY (int ret = proj.compileAndLink(); ret != E_OK)
+	{
+		return ret;
+	}
+
+	if (args.size() > 1
+		&& args.at(1) == "run"
+		)
+	{
+		std::cout << ">>> Running...\n";
+		args.erase(args.cbegin(), args.cbegin() + 2);
+		std::cout << soup::os::execute(proj.getOutFile(proj_name).string(), std::move(args));
+	}
+
+	return E_OK;
 }
 
 SOUP_MAIN_CLI(&entry);
