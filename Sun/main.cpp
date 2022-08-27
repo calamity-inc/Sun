@@ -61,6 +61,14 @@ struct Project
 			{
 				continue;
 			}
+			if (line.at(line.size() - 1) == '\r')
+			{
+				line.erase(line.size() - 1);
+				SOUP_IF_UNLIKELY(line.empty())
+				{
+					continue;
+				}
+			}
 
 			if (line.at(0) == '+')
 			{
