@@ -224,9 +224,7 @@ struct Project
 					compiler.extra_args.emplace_back(std::move(arg_include));
 				}
 				{
-					std::string arg_lib = "-l";
-					arg_lib.append(dep_proj.getOutFile(dep_name).string());
-					compiler.extra_linker_args.emplace_back(std::move(arg_lib));
+					compiler.extra_linker_args.emplace_back(dep_proj.getOutFile(dep_name).string());
 				}
 			}
 			std::cout << ">>> Time for the main attraction.\n";
