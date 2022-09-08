@@ -47,3 +47,7 @@ If the include directory differs from source directory, you can use `require REL
 ## Project name
 
 Sun will make a guess about your project name based on the file structure, but you can override this adding `name ...` to the .sun file.
+
+## Compiler arguments
+
+You can pass arbitrary arguments to the compiler with the `arg` keyword.

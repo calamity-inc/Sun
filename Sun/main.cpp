@@ -38,6 +38,7 @@ struct Project
 	std::vector<Dependency> dependencies{};
 	soup::AtomicStack<std::filesystem::path> cpps{};
 	bool opt_static = false;
+	std::vector<std::string> extra_args{};
 
 	Project(std::filesystem::path dir)
 		: dir(std::move(dir))
@@ -125,6 +126,12 @@ struct Project
 				continue;
 			}
 
+			if (line.substr(0, 4) == "arg ")
+			{
+				extra_args.emplace_back(line.substr(4));
+				continue;
+			}
+
 			if (line == "static")
 			{
 				opt_static = true;
@@ -182,6 +189,7 @@ struct Project
 	[[nodiscard]] soup::Compiler getCompiler() const
 	{
 		soup::Compiler compiler;
+		compiler.extra_args = extra_args;
 		return compiler;
 	}
 
