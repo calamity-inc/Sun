@@ -38,6 +38,7 @@ struct Project
 	std::vector<Dependency> dependencies{};
 	soup::AtomicStack<std::filesystem::path> cpps{};
 	bool opt_static = false;
+	bool opt_dynamic = false;
 	std::vector<std::string> extra_args{};
 
 	Project(std::filesystem::path dir)
@@ -138,6 +139,16 @@ struct Project
 				continue;
 			}
 
+			if (line == "dynamic" || line == "shared")
+			{
+				opt_dynamic = true;
+#if !SOUP_WINDOWS
+				extra_args.emplace_back("-fPIC");
+				extra_args.emplace_back("-fvisibility=hidden");
+#endif
+				continue;
+			}
+
 			std::cout << "Ignoring line with unknown data: " << line << "\n";
 		}
 		return true;
@@ -215,9 +226,9 @@ struct Project
 				}
 				auto dep_name = dep_proj.getName();
 				std::cout << ">>> Processing dependency: " << dep_name << "\n";
-				SOUP_IF_UNLIKELY(!dep_proj.opt_static)
+				SOUP_IF_UNLIKELY(!dep_proj.opt_static && !dep_proj.opt_dynamic)
 				{
-					std::cout << "Not a static library? Not sure how to sanely deal with that.\n";
+					std::cout << "Dependency does not specify 'static' or 'dynamic'.\n";
 					exit(E_BADDEPEND);
 				}
 				auto err = dep_proj.compileAndLink();
@@ -225,14 +236,36 @@ struct Project
 				{
 					exit(err);
 				}
-				// Add relevant args to our compiler
+				// Add compiler include flag
 				{
 					std::string arg_include = "-I";
 					arg_include.append(dep.include_dir.string());
 					compiler.extra_args.emplace_back(std::move(arg_include));
 				}
+				if (dep_proj.opt_static)
 				{
+					// Tell linker to include the static library
 					compiler.extra_linker_args.emplace_back(dep_proj.getOutFile(dep_name).string());
+				}
+				else //if (dep_proj.opt_dynamic)
+				{
+#if SOUP_WINDOWS
+					// Tell linker to include the dynamic library
+					compiler.extra_linker_args.emplace_back(dep_proj.getLibPath(dep_name).string());
+#else
+					// Add dependency directory to linker search path
+					{
+						std::string arg_libpath = "-L";
+						arg_libpath.append(dep.dir.string());
+						compiler.extra_linker_args.emplace_back(std::move(arg_libpath));
+					}
+					// Give dependency name to linker
+					{
+						std::string arg_libpath = "-l";
+						arg_libpath.append(dep_name);
+						compiler.extra_linker_args.emplace_back(std::move(arg_libpath));
+					}
+#endif
 				}
 			}
 			std::cout << ">>> Time for the main attraction.\n";
@@ -329,6 +362,13 @@ struct Project
 		{
 			name.append(soup::Compiler::getStaticLibraryExtension());
 		}
+		else if (opt_dynamic)
+		{
+#if SOUP_LINUX
+			name.insert(0, "lib");
+#endif
+			name.append(soup::Compiler::getDynamicLibraryExtension());
+		}
 		else
 		{
 			name.append(soup::Compiler::getExecutableExtension());
@@ -337,6 +377,16 @@ struct Project
 		p /= name;
 		return p;
 	}
+
+#if SOUP_WINDOWS
+	[[nodiscard]] std::filesystem::path getLibPath(std::string name) const
+	{
+		name.append(".lib");
+		auto p = dir;
+		p /= name;
+		return p;
+	}
+#endif
 
 	int compileAndLink()
 	{
@@ -351,6 +401,16 @@ struct Project
 		if (opt_static)
 		{
 			linkout = compiler.makeStaticLibrary(objects, outfile.string());
+		}
+		else if (opt_dynamic)
+		{
+			linkout = compiler.makeDynamicLibrary(objects, outfile.string());
+#if SOUP_WINDOWS
+			if (linkout.substr(0, 19) == "   Creating library")
+			{
+				linkout.clear();
+			}
+#endif
 		}
 		else
 		{
@@ -420,6 +480,10 @@ int entry(std::vector<std::string>&& args, bool console)
 		{
 			of << "static\n";
 		}
+		else if (args.at(2) == "dynamic")
+		{
+			of << "dynamic\n";
+		}
 		else
 		{
 			return syntax_set();
@@ -439,7 +503,7 @@ int entry(std::vector<std::string>&& args, bool console)
 		
 		std::cout << "No .sun file found in the working directory; I've created one for you." << std::endl;
 		std::cout << "Run 'sun' again to build your project." << std::endl;
-		std::cout << "Run 'sun set static' to set this project to be a static library." << std::endl;
+		std::cout << "If this is a library, use 'sun set static' or 'sun set dynamic'." << std::endl;
 		return E_NEWSUNFILE;
 	}
 	const auto proj_name = proj.getName();
