@@ -65,6 +65,14 @@ struct Project
 			{
 				continue;
 			}
+			while (soup::string::isSpace(line.at(0)))
+			{
+				line.erase(0, 1);
+				SOUP_IF_UNLIKELY(line.empty())
+				{
+					goto _continue_2;
+				}
+			}
 			if (line.at(line.size() - 1) == '\r')
 			{
 				line.erase(line.size() - 1);
@@ -212,6 +220,7 @@ struct Project
 			}
 
 			std::cout << "Ignoring line with unknown data: " << line << "\n";
+		_continue_2:;
 		}
 		return true;
 	}
