@@ -59,3 +59,23 @@ Sun will make a guess about your project name based on the file structure, but y
 You can pass arbitrary arguments to the compiler with the `arg` keyword.
 
 Linker-specific arguments can be provided with the `linker_arg` keyword.
+
+## Conditionals
+
+Sun supports basic conditionals with the following syntax:
+
+```
+if [not] <condition>
+...
+endif
+```
+
+Valid substitutions for `<condition>` are as follows: `windows`, `linux`, `true`, `false`.
+
+An example:
+
+```
+if windows
+linker_arg -lKernel32
+endif
+```

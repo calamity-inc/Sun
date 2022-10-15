@@ -8,6 +8,7 @@
 #include <soup/Compiler.hpp>
 #include <soup/main.hpp>
 #include <soup/os.hpp>
+#include <soup/string.hpp>
 #include <soup/StringMatch.hpp>
 #include <soup/Thread.hpp>
 
@@ -58,6 +59,8 @@ struct Project
 		}
 
 		std::ifstream in(sunfile);
+		bool ifblk_active = false;
+		bool ifblk_true;
 		for (std::string line; std::getline(in, line); )
 		{
 			SOUP_IF_UNLIKELY(line.empty())
@@ -71,6 +74,23 @@ struct Project
 				{
 					continue;
 				}
+			}
+
+			if (line == "endif")
+			{
+				if (!ifblk_active)
+				{
+					std::cout << "endif called while if-block is not active\n";
+				}
+				ifblk_active = false;
+				continue;
+			}
+
+			if (ifblk_active
+				&& !ifblk_true
+				)
+			{
+				continue;
 			}
 
 			if (line.at(0) == '+')
@@ -137,6 +157,42 @@ struct Project
 			if (line.substr(0, 11) == "linker_arg ")
 			{
 				extra_linker_args.emplace_back(line.substr(11));
+				continue;
+			}
+
+			if (line.substr(0, 3) == "if ")
+			{
+				auto condition = line.substr(3);
+				soup::string::lower(condition);
+				bool invert = false;
+				if (condition.substr(0, 4) == "not ")
+				{
+					invert = true;
+					condition = condition.substr(4);
+				}
+				bool val = false;
+				if (condition == "windows")
+				{
+					val = SOUP_WINDOWS;
+				}
+				else if (condition == "linux")
+				{
+					val = SOUP_LINUX;
+				}
+				else if (condition == "true")
+				{
+					val = true;
+				}
+				else if (condition == "false")
+				{
+					val = false;
+				}
+				else
+				{
+					std::cout << "Treating unknown condition \"" << condition << "\" as false\n";
+				}
+				ifblk_active = true;
+				ifblk_true = (val ^ invert);
 				continue;
 			}
 
