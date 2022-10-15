@@ -14,10 +14,8 @@
 
 #define E_OK			0
 #define E_BADARG		1
-#define E_NOSUNFILE		2
-#define E_NEWSUNFILE	3
-#define E_LINKERR		4
-#define E_BADDEPEND		5
+#define E_LINKERR		2
+#define E_BADDEPEND		3
 
 [[nodiscard]] static std::string get_name_no_extension(const std::filesystem::path& p)
 {
@@ -35,6 +33,7 @@ struct Dependency
 struct Project
 {
 	std::filesystem::path dir;
+	std::filesystem::path sunfile;
 	std::string name;
 	std::vector<Dependency> dependencies{};
 	soup::AtomicStack<std::filesystem::path> cpps{};
@@ -43,16 +42,15 @@ struct Project
 	std::vector<std::string> extra_args{};
 	std::vector<std::string> extra_linker_args{};
 
-	Project(std::filesystem::path dir)
-		: dir(std::move(dir))
+	Project(std::filesystem::path dir, std::string name = {})
+		: dir(dir), sunfile(std::move(dir))
 	{
+		name.append(".sun");
+		sunfile /= name;
 	}
 
 	bool load()
 	{
-		auto sunfile = dir;
-		sunfile /= ".sun";
-
 		SOUP_IF_UNLIKELY(!std::filesystem::exists(sunfile))
 		{
 			return false;
@@ -489,15 +487,6 @@ struct Project
 	}
 };
 
-static int syntax_set()
-{
-	std::cout << "\n";
-	std::cout << "  sun set name ...   Set project name\n";
-	std::cout << "  sun set static     Set project to be a static library\n";
-	std::cout << "\n";
-	return E_BADARG;
-}
-
 int entry(std::vector<std::string>&& args, bool console)
 {
 #if false
@@ -506,86 +495,138 @@ int entry(std::vector<std::string>&& args, bool console)
 	std::cout << "Time's up.\n";
 #endif
 
-	if (args.size() > 1
-		&& args.at(1) != "run"
+	size_t i = 1;
+
+	SOUP_IF_UNLIKELY (args.size() > i
+		&& (args.at(i) == "help"
+			|| args.at(i) == "-?"
+			)
 		)
 	{
-		SOUP_IF_UNLIKELY (args.at(1) != "set")
+		// sun help
+		if (args.size() > ++i)
 		{
-			std::cout << "\n";
-			std::cout << "  sun                Build project\n";
-			std::cout << "  sun run ...        Build & run project\n";
-			std::cout << "  sun set ...        Modify project\n";
-			std::cout << "\n";
-			return E_BADARG;
-		}
-
-		SOUP_IF_UNLIKELY (!std::filesystem::is_regular_file(".sun"))
-		{
-			std::cout << "No .sun file found in the working directory." << std::endl;
-			return E_NOSUNFILE;
-		}
-
-		SOUP_IF_UNLIKELY (args.size() <= 2)
-		{
-			return syntax_set();
-		}
-
-		std::ofstream of(".sun", std::ios::app);
-		if (args.at(2) == "name")
-		{
-			SOUP_IF_UNLIKELY(args.size() <= 3)
+			// sun help ...
+			if (args.at(i) == "create")
 			{
-				return syntax_set();
+				// sun help create
+				std::cout << "\n";
+				std::cout << "  sun [proj] create            Create executable project\n";
+				std::cout << "  sun [proj] create static     Create static library project\n";
+				std::cout << "  sun [proj] create dynamic    Create dynamic/shared library project\n";
+				std::cout << "\n";
+				return E_OK;
 			}
-			of << "name " << args.at(3) << "\n";
-		}
-		else if (args.at(2) == "static")
-		{
-			of << "static\n";
-		}
-		else if (args.at(2) == "dynamic")
-		{
-			of << "dynamic\n";
+			else
+			{
+				std::cout << "Unknown help topic \"" << args.at(i) << "\". Use 'sun help' for help overview.\n";
+				return E_BADARG;
+			}
 		}
 		else
 		{
-			return syntax_set();
+			std::cout << "\n";
+			std::cout << "  sun [proj] create ...        Create project ('sun help create')\n";
+			std::cout << "  sun [proj]                   Build project\n";
+			std::cout << "  sun [proj] run ...           Build & run project\n";
+			std::cout << "\n";
+			return E_OK;
 		}
-
-		std::cout << "Done." << std::endl;
-		return E_OK;
 	}
 
-	// Just 'sun' was used...
-
-	Project proj(std::filesystem::current_path());
-	SOUP_IF_UNLIKELY (!proj.load())
-	{
-		std::ofstream of(".sun");
-		of << "+*.cpp\n";
-		
-		std::cout << "No .sun file found in the working directory; I've created one for you." << std::endl;
-		std::cout << "Run 'sun' again to build your project." << std::endl;
-		std::cout << "If this is a library, use 'sun set static' or 'sun set dynamic'." << std::endl;
-		return E_NEWSUNFILE;
-	}
-	const auto proj_name = proj.getName();
-	SOUP_IF_UNLIKELY (int ret = proj.compileAndLink(); ret != E_OK)
-	{
-		return ret;
-	}
-
-	if (args.size() > 1
-		&& args.at(1) == "run"
+	std::string projname{};
+	if (args.size() > i
+		&& args.at(i) != "create"
+		&& args.at(i) != "set"
+		&& args.at(i) != "run"
 		)
 	{
-		std::cout << ">>> Running...\n";
-		args.erase(args.cbegin(), args.cbegin() + 2);
-		std::cout << soup::os::execute(proj.getOutFile(proj_name).string(), std::move(args));
+		projname = args.at(i++);
 	}
 
-	return E_OK;
+	SOUP_IF_UNLIKELY (args.size() > i
+		&& args.at(i) != "run"
+		)
+	{
+		if (args.at(i) == "create")
+		{
+			// sun [proj] create
+
+			projname.append(".sun");
+
+			SOUP_IF_UNLIKELY (std::filesystem::is_regular_file(projname))
+			{
+				std::cout << projname << " already exists, not going to overwrite it.\n";
+				return E_BADARG;
+			}
+
+			std::ofstream of(projname);
+			of << "+*.cpp\n";
+
+			if (args.size() > ++i
+				&& (args.at(i) == "static"
+					|| args.at(i) == "dynamic"
+					|| args.at(i) == "shared"
+					)
+				)
+			{
+				of << args.at(i) << "\n";
+			}
+
+			std::cout << "Done.\n";
+			return E_OK;
+		}
+		else
+		{
+			// sun [proj] ...
+			std::cout << "Unknown project command \"" << args.at(i) << "\". Use 'sun help' for help.\n";
+			return E_BADARG;
+		}
+	}
+	else
+	{
+		// sun [proj]
+
+		Project proj(std::filesystem::current_path(), projname);
+
+		SOUP_IF_UNLIKELY (!proj.load())
+		{
+			auto projfile = projname;
+			projfile.append(".sun");
+			SOUP_IF_LIKELY (!std::filesystem::is_regular_file(projfile))
+			{
+				std::cout << "No file by the name of " << projfile << " in the working directory.\n";
+				std::cout << "Use 'sun " << projname;
+				if (!projname.empty())
+				{
+					std::cout << " ";
+				}
+				std::cout << "create' to create it. Use 'sun help create' for more info.\n";
+			}
+			else
+			{
+				std::cout << "Failed to load " << projfile << ".\n";
+			}
+			return E_BADARG;
+		}
+
+		const auto outname = proj.getName();
+		SOUP_IF_UNLIKELY (int ret = proj.compileAndLink(); ret != E_OK)
+		{
+			return ret;
+		}
+
+		if (args.size() > i
+			&& args.at(i) == "run"
+			)
+		{
+			std::cout << ">>> Running...\n";
+			args.erase(args.cbegin(), args.cbegin() + 2);
+			std::cout << soup::os::execute(proj.getOutFile(outname).string(), std::move(args));
+		}
+
+		return E_OK;
+	}
 }
 
 SOUP_MAIN_CLI(&entry);

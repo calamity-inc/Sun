@@ -32,15 +32,11 @@ For example, if you want to compile all .cpp files except for wasm.cpp:
 
 ## Compile as static library
 
-Use the `sun set static` to indicate that the project is a static library.
-
-Internally, this will simply add a line that says `static` to the .sun file.
+Add a line that says `static` to the .sun file to indicate that the project is a static library.
 
 ## Compile as dynamic/shared library
 
-Use the `sun set dynamic` to indicate that the project is a dynamic library.
-
-Internally, this will simply add a line that says `dynamic` to the .sun file.
+Add a line that says `dynamic` to the .sun file to indicate that the project is a dynamic library.
 
 ## Dependencies
 
