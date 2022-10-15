@@ -16,6 +16,7 @@
 #define E_BADARG		1
 #define E_LINKERR		2
 #define E_BADDEPEND		3
+#define E_EXCEPTION		4
 
 [[nodiscard]] static std::string get_name_no_extension(const std::filesystem::path& p)
 {
@@ -397,7 +398,16 @@ struct Project
 						std::cout << name << "\n";
 						data.output_mutex.unlock();
 
-						auto msg = data.compiler->makeObject(cpp.string(), o);
+						std::string msg;
+						try
+						{
+							msg = data.compiler->makeObject(cpp.string(), o);
+						}
+						catch (const std::exception& e)
+						{
+							msg = e.what();
+							msg.push_back('\n');
+						}
 						if (!msg.empty())
 						{
 							data.output_mutex.lock();
@@ -598,46 +608,53 @@ int entry(std::vector<std::string>&& args, bool console)
 	else
 	{
 		// sun [proj]
-
-		Project proj(std::filesystem::current_path(), projname);
-
-		SOUP_IF_UNLIKELY (!proj.load())
+		try
 		{
-			auto projfile = projname;
-			projfile.append(".sun");
-			SOUP_IF_LIKELY (!std::filesystem::is_regular_file(projfile))
+			Project proj(std::filesystem::current_path(), projname);
+
+			SOUP_IF_UNLIKELY(!proj.load())
 			{
-				std::cout << "No file by the name of " << projfile << " in the working directory.\n";
-				std::cout << "Use 'sun " << projname;
-				if (!projname.empty())
+				auto projfile = projname;
+				projfile.append(".sun");
+				SOUP_IF_LIKELY(!std::filesystem::is_regular_file(projfile))
 				{
-					std::cout << " ";
+					std::cout << "No file by the name of " << projfile << " in the working directory.\n";
+					std::cout << "Use 'sun " << projname;
+					if (!projname.empty())
+					{
+						std::cout << " ";
+					}
+					std::cout << "create' to create it. Use 'sun help create' for more info.\n";
 				}
-				std::cout << "create' to create it. Use 'sun help create' for more info.\n";
-			}
 			else
 			{
-				std::cout << "Failed to load " << projfile << ".\n";
+			std::cout << "Failed to load " << projfile << ".\n";
 			}
 			return E_BADARG;
-		}
+			}
 
-		const auto outname = proj.getName();
-		SOUP_IF_UNLIKELY (int ret = proj.compileAndLink(); ret != E_OK)
+			const auto outname = proj.getName();
+			SOUP_IF_UNLIKELY(int ret = proj.compileAndLink(); ret != E_OK)
+			{
+				return ret;
+			}
+
+			if (args.size() > i
+				&& args.at(i) == "run"
+				)
+			{
+				std::cout << ">>> Running...\n";
+				args.erase(args.cbegin(), args.cbegin() + 2);
+				std::cout << soup::os::execute(proj.getOutFile(outname).string(), std::move(args));
+			}
+
+			return E_OK;
+		}
+		catch (const std::exception& e)
 		{
-			return ret;
+			std::cout << e.what() << "\n";
+			return E_EXCEPTION;
 		}
-
-		if (args.size() > i
-			&& args.at(i) == "run"
-			)
-		{
-			std::cout << ">>> Running...\n";
-			args.erase(args.cbegin(), args.cbegin() + 2);
-			std::cout << soup::os::execute(proj.getOutFile(outname).string(), std::move(args));
-		}
-
-		return E_OK;
 	}
 }
 
