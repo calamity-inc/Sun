@@ -1,6 +1,8 @@
 # Config (.sun file)
 
-When you run Sun, it will look for a `.sun` file in the working directory, and create one if it doesn't exist.
+When you run Sun, it will look for a `.sun` file in the working directory.
+
+You can also optionally provide a project name, e.g. with `sun example` it will look for a `example.sun` file.
 
 ## Add source files
 
