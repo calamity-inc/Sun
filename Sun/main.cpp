@@ -377,8 +377,10 @@ struct Project
 					std::string o = op.string();
 					o.append(".o");
 
+					std::error_code ec;
 					if (!std::filesystem::exists(o)
-						|| std::filesystem::last_write_time(cpp) > std::filesystem::last_write_time(o)
+						|| std::filesystem::last_write_time(cpp, ec) > std::filesystem::last_write_time(o, ec)
+						|| ec
 						)
 					{
 						data.output_mutex.lock();
