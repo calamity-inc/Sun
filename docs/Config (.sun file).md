@@ -57,3 +57,5 @@ Sun will make a guess about your project name based on the file structure, but y
 ## Compiler arguments
 
 You can pass arbitrary arguments to the compiler with the `arg` keyword.
+
+Linker-specific arguments can be provided with the `linker_arg` keyword.

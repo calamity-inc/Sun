@@ -40,6 +40,7 @@ struct Project
 	bool opt_static = false;
 	bool opt_dynamic = false;
 	std::vector<std::string> extra_args{};
+	std::vector<std::string> extra_linker_args{};
 
 	Project(std::filesystem::path dir)
 		: dir(std::move(dir))
@@ -133,6 +134,12 @@ struct Project
 				continue;
 			}
 
+			if (line.substr(0, 11) == "linker_arg ")
+			{
+				extra_linker_args.emplace_back(line.substr(11));
+				continue;
+			}
+
 			if (line == "static")
 			{
 				opt_static = true;
@@ -201,6 +208,7 @@ struct Project
 	{
 		soup::Compiler compiler;
 		compiler.extra_args = extra_args;
+		compiler.extra_linker_args = extra_linker_args;
 		return compiler;
 	}
 
