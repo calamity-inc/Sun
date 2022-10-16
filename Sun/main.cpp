@@ -287,6 +287,7 @@ struct Project
 
 	[[nodiscard]] std::vector<std::string> compile(soup::Compiler& compiler)
 	{
+		std::vector<std::string> objects{};
 		if (!dependencies.empty())
 		{
 			for (const auto& dep : dependencies)
@@ -304,10 +305,21 @@ struct Project
 					std::cout << "Dependency does not specify 'static' or 'dynamic'.\n";
 					exit(E_BADDEPEND);
 				}
-				auto err = dep_proj.compileAndLink();
-				SOUP_IF_UNLIKELY(err != E_OK)
+				if (dep_proj.opt_static && opt_static) // Static library depending on a static library?
 				{
-					exit(err);
+					// Compile dependency and add it to our linking pile
+					auto dep_compiler = dep_proj.getCompiler();
+					auto dep_objects = dep_proj.compile(dep_compiler);
+					objects.insert(objects.end(), dep_objects.begin(), dep_objects.end());
+					compiler.extra_linker_args.insert(compiler.extra_linker_args.end(), dep_proj.extra_linker_args.begin(), dep_proj.extra_linker_args.end());
+				}
+				else
+				{
+					auto err = dep_proj.compileAndLink();
+					SOUP_IF_UNLIKELY(err != E_OK)
+					{
+						exit(err);
+					}
 				}
 				// Add compiler include flag
 				{
@@ -317,8 +329,11 @@ struct Project
 				}
 				if (dep_proj.opt_static)
 				{
-					// Tell linker to include the static library
-					compiler.extra_linker_args.emplace_back(dep_proj.getOutFile(dep_name).string());
+					if (!opt_static)
+					{
+						// Tell linker to include the static library
+						compiler.extra_linker_args.emplace_back(dep_proj.getOutFile(dep_name).string());
+					}
 				}
 				else //if (dep_proj.opt_dynamic)
 				{
@@ -422,7 +437,6 @@ struct Project
 		}
 		soup::Thread::awaitCompletion(threads);
 
-		std::vector<std::string> objects{};
 		while (true)
 		{
 			auto node = data.objects.pop_front();
