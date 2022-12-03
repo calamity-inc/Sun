@@ -6,6 +6,7 @@
 
 #include <soup/AtomicStack.hpp>
 #include <soup/Compiler.hpp>
+#include <soup/joaat.hpp>
 #include <soup/main.hpp>
 #include <soup/os.hpp>
 #include <soup/string.hpp>
@@ -248,6 +249,20 @@ struct Project
 		return p.filename().string();
 	}
 
+	[[nodiscard]] std::string getIntSubdirName() const
+	{
+#if SOUP_WINDOWS
+		auto hash = soup::joaat::hash("windows");
+#else
+		auto hash = soup::joaat::hash("linux");
+#endif
+		for (const auto& extra_arg : extra_args)
+		{
+			hash = soup::joaat::concat(hash, extra_arg);
+		}
+		return soup::string::hex(hash);
+	}
+
 	void matchFiles(std::string&& query, soup::AtomicStack<std::filesystem::path>& cpps, void(*callback)(soup::AtomicStack<std::filesystem::path>&, std::filesystem::path)) const
 	{
 		if (query.find('*') == std::string::npos)
@@ -281,6 +296,7 @@ struct Project
 	{
 		Project* proj;
 		const soup::Compiler* compiler;
+		std::filesystem::path base_path;
 		std::mutex output_mutex;
 		soup::AtomicStack<std::string> objects;
 	};
@@ -359,16 +375,20 @@ struct Project
 			std::cout << ">>> Time for the main attraction.\n";
 		}
 
-		auto intdir = dir;
-		intdir /= "int";
-		if (!std::filesystem::is_directory(intdir))
-		{
-			std::filesystem::create_directory(intdir);
-		}
-
 		SharedCompileData data;
 		data.proj = this;
 		data.compiler = &compiler;
+		data.base_path = dir;
+		data.base_path /= "int";
+		if (!std::filesystem::is_directory(data.base_path))
+		{
+			std::filesystem::create_directory(data.base_path);
+		}
+		data.base_path /= getIntSubdirName();
+		if (!std::filesystem::is_directory(data.base_path))
+		{
+			std::filesystem::create_directory(data.base_path);
+		}
 
 		size_t threads_to_spin_up = (std::thread::hardware_concurrency() - 1);
 		if (threads_to_spin_up < 1)
@@ -397,8 +417,7 @@ struct Project
 
 					auto name = get_name_no_extension(cpp);
 
-					auto op = data.proj->dir;
-					op /= "int";
+					auto op = data.base_path;
 					op /= name;
 					std::string o = op.string();
 					o.append(".o");
