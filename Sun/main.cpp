@@ -659,11 +659,11 @@ int entry(std::vector<std::string>&& args, bool console)
 					}
 					std::cout << "create' to create it. Use 'sun help create' for more info.\n";
 				}
-			else
-			{
-			std::cout << "Failed to load " << projfile << ".\n";
-			}
-			return E_BADARG;
+				else
+				{
+					std::cout << "Failed to load " << projfile << ".\n";
+				}
+				return E_BADARG;
 			}
 
 			const auto outname = proj.getName();
