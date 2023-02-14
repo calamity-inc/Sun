@@ -21,8 +21,8 @@
 
 [[nodiscard]] static std::string get_name_no_extension(const std::filesystem::path& p)
 {
-	auto name = p.filename().string();
-	auto ext = p.extension().string();
+	auto name = soup::string::fixType(p.filename().u8string());
+	auto ext = soup::string::fixType(p.extension().u8string());
 	return name.substr(0, name.length() - ext.length());
 }
 
@@ -242,11 +242,11 @@ struct Project
 			}
 		}
 		auto p = dir;
-		if (p.filename().string() == "src")
+		if (p.filename().u8string() == u8"src")
 		{
 			p = p.parent_path();
 		}
-		return p.filename().string();
+		return soup::string::fixType(p.filename().u8string());
 	}
 
 	[[nodiscard]] std::string getIntSubdirName() const
@@ -275,7 +275,7 @@ struct Project
 			{
 				if (f.is_regular_file())
 				{
-					if (soup::StringMatch::wildcard(query, f.path().filename().string(), 1))
+					if (soup::StringMatch::wildcard(query, soup::string::fixType(f.path().filename().u8string()), 1))
 					{
 						callback(cpps, f.path());
 					}
@@ -340,7 +340,7 @@ struct Project
 				// Add compiler include flag
 				{
 					std::string arg_include = "-I";
-					arg_include.append(dep.include_dir.string());
+					arg_include.append(soup::string::fixType(dep.include_dir.u8string()));
 					compiler.extra_args.emplace_back(std::move(arg_include));
 				}
 				if (dep_proj.opt_static)
@@ -348,19 +348,19 @@ struct Project
 					if (!opt_static)
 					{
 						// Tell linker to include the static library
-						compiler.extra_linker_args.emplace_back(dep_proj.getOutFile(dep_name).string());
+						compiler.extra_linker_args.emplace_back(soup::string::fixType(dep_proj.getOutFile(dep_name).u8string()));
 					}
 				}
 				else //if (dep_proj.opt_dynamic)
 				{
 #if SOUP_WINDOWS
 					// Tell linker to include the dynamic library
-					compiler.extra_linker_args.emplace_back(dep_proj.getLibPath(dep_name).string());
+					compiler.extra_linker_args.emplace_back(soup::string::fixType(dep_proj.getLibPath(dep_name).u8string()));
 #else
 					// Add dependency directory to linker search path
 					{
 						std::string arg_libpath = "-L";
-						arg_libpath.append(dep.dir.string());
+						arg_libpath.append(soup::string::fixType(dep.dir.u8string()));
 						compiler.extra_linker_args.emplace_back(std::move(arg_libpath));
 					}
 					// Give dependency name to linker
@@ -419,7 +419,7 @@ struct Project
 
 					auto op = data.base_path;
 					op /= name;
-					std::string o = op.string();
+					std::string o = soup::string::fixType(op.u8string());
 					o.append(".o");
 
 					std::error_code ec;
@@ -435,7 +435,7 @@ struct Project
 						std::string msg;
 						try
 						{
-							msg = data.compiler->makeObject(cpp.string(), o);
+							msg = data.compiler->makeObject(soup::string::fixType(cpp.u8string()), o);
 						}
 						catch (const std::exception& e)
 						{
@@ -517,11 +517,11 @@ struct Project
 		std::string linkout{};
 		if (opt_static)
 		{
-			linkout = compiler.makeStaticLibrary(objects, outfile.string());
+			linkout = compiler.makeStaticLibrary(objects, soup::string::fixType(outfile.u8string()));
 		}
 		else if (opt_dynamic)
 		{
-			linkout = compiler.makeDynamicLibrary(objects, outfile.string());
+			linkout = compiler.makeDynamicLibrary(objects, soup::string::fixType(outfile.u8string()));
 #if SOUP_WINDOWS
 			if (linkout.substr(0, 19) == "   Creating library")
 			{
@@ -531,7 +531,7 @@ struct Project
 		}
 		else
 		{
-			linkout = compiler.makeExecutable(objects, outfile.string());
+			linkout = compiler.makeExecutable(objects, soup::string::fixType(outfile.u8string()));
 		}
 		if (!linkout.empty())
 		{
@@ -678,7 +678,7 @@ int entry(std::vector<std::string>&& args, bool console)
 			{
 				std::cout << ">>> Running...\n";
 				args.erase(args.cbegin(), args.cbegin() + 2);
-				std::cout << soup::os::execute(proj.getOutFile(outname).string(), std::move(args));
+				std::cout << soup::os::execute(soup::string::fixType(proj.getOutFile(outname).u8string()), std::move(args));
 			}
 
 			return E_OK;
