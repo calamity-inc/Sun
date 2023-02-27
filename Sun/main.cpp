@@ -38,6 +38,7 @@ struct Project
 	std::filesystem::path sunfile;
 	std::string name;
 	std::vector<Dependency> dependencies{};
+	std::string cpp_version{};
 	soup::AtomicStack<std::filesystem::path> cpps{};
 	bool opt_static = false;
 	bool opt_dynamic = false;
@@ -154,6 +155,16 @@ struct Project
 				dep.dir = std::filesystem::absolute(dep.dir);
 				dep.include_dir = std::filesystem::absolute(dep.include_dir);
 				dependencies.emplace_back(std::move(dep));
+				continue;
+			}
+
+			if (line.substr(0, 4) == "c++ " || line.substr(0, 4) == "cpp ")
+			{
+				if (!cpp_version.empty())
+				{
+					std::cout << "C++ version is specified multiple times.\n";
+				}
+				cpp_version = line.substr(4);
 				continue;
 			}
 
@@ -287,6 +298,11 @@ struct Project
 	[[nodiscard]] soup::Compiler getCompiler() const
 	{
 		soup::Compiler compiler;
+		if (!cpp_version.empty())
+		{
+			compiler.lang = "c++";
+			compiler.lang.append(cpp_version);
+		}
 		compiler.extra_args = extra_args;
 		compiler.extra_linker_args = extra_linker_args;
 		return compiler;

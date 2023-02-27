@@ -52,6 +52,14 @@ If the include directory differs from source directory, you can use `require REL
 
 Sun will make a guess about your project name based on the file structure, but you can override this adding `name ...` to the .sun file.
 
+## C++ version
+
+You can use `c++ ...` or `cpp ...` to specify the C++ version for your project. For example:
+
+```
+cpp 20
+```
+
 ## Compiler arguments
 
 You can pass arbitrary arguments to the compiler with the `arg` keyword.
