@@ -117,7 +117,6 @@ struct Project
 				line.erase(0, 1);
 				matchFiles(std::move(line), cpps, [](soup::AtomicStack<std::filesystem::path>& cpps, std::filesystem::path file)
 				{
-					file = std::filesystem::absolute(file);
 					for (auto node = cpps.head.load(); node != nullptr; node = node->next)
 					{
 						if (node->data == file)
@@ -278,7 +277,7 @@ struct Project
 	{
 		if (query.find('*') == std::string::npos)
 		{
-			callback(cpps, std::move(query));
+			callback(cpps, dir / query);
 		}
 		else
 		{
