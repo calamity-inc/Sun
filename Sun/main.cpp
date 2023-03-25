@@ -54,7 +54,7 @@ struct Project
 
 	bool load()
 	{
-		SOUP_IF_UNLIKELY(!std::filesystem::exists(sunfile))
+		SOUP_IF_UNLIKELY (!std::filesystem::exists(sunfile))
 		{
 			return false;
 		}
@@ -64,14 +64,14 @@ struct Project
 		bool ifblk_true;
 		for (std::string line; std::getline(in, line); )
 		{
-			SOUP_IF_UNLIKELY(line.empty())
+			SOUP_IF_UNLIKELY (line.empty())
 			{
 				continue;
 			}
 			while (soup::string::isSpace(line.at(0)))
 			{
 				line.erase(0, 1);
-				SOUP_IF_UNLIKELY(line.empty())
+				SOUP_IF_UNLIKELY (line.empty())
 				{
 					goto _continue_2;
 				}
@@ -79,7 +79,7 @@ struct Project
 			if (line.at(line.size() - 1) == '\r')
 			{
 				line.erase(line.size() - 1);
-				SOUP_IF_UNLIKELY(line.empty())
+				SOUP_IF_UNLIKELY (line.empty())
 				{
 					continue;
 				}
@@ -325,14 +325,14 @@ struct Project
 			for (const auto& dep : dependencies)
 			{
 				Project dep_proj(dep.dir);
-				SOUP_IF_UNLIKELY(!dep_proj.load())
+				SOUP_IF_UNLIKELY (!dep_proj.load())
 				{
 					std::cout << "Failed to load dependency: " << dep.dir << "\n";
 					exit(E_BADDEPEND);
 				}
 				auto dep_name = dep_proj.getName();
 				std::cout << ">>> Processing dependency: " << dep_name << "\n";
-				SOUP_IF_UNLIKELY(!dep_proj.opt_static && !dep_proj.opt_dynamic)
+				SOUP_IF_UNLIKELY (!dep_proj.opt_static && !dep_proj.opt_dynamic)
 				{
 					std::cout << "Dependency does not specify 'static' or 'dynamic'.\n";
 					exit(E_BADDEPEND);
@@ -348,7 +348,7 @@ struct Project
 				else
 				{
 					auto err = dep_proj.compileAndLink();
-					SOUP_IF_UNLIKELY(err != E_OK)
+					SOUP_IF_UNLIKELY (err != E_OK)
 					{
 						exit(err);
 					}
@@ -661,11 +661,11 @@ int entry(std::vector<std::string>&& args, bool console)
 		{
 			Project proj(std::filesystem::current_path(), projname);
 
-			SOUP_IF_UNLIKELY(!proj.load())
+			SOUP_IF_UNLIKELY (!proj.load())
 			{
 				auto projfile = projname;
 				projfile.append(".sun");
-				SOUP_IF_LIKELY(!std::filesystem::is_regular_file(projfile))
+				SOUP_IF_LIKELY (!std::filesystem::is_regular_file(projfile))
 				{
 					std::cout << "No file by the name of " << projfile << " in the working directory.\n";
 					std::cout << "Use 'sun " << projname;
@@ -683,7 +683,7 @@ int entry(std::vector<std::string>&& args, bool console)
 			}
 
 			const auto outname = proj.getName();
-			SOUP_IF_UNLIKELY(int ret = proj.compileAndLink(); ret != E_OK)
+			SOUP_IF_UNLIKELY (int ret = proj.compileAndLink(); ret != E_OK)
 			{
 				return ret;
 			}
