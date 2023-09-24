@@ -511,7 +511,7 @@ struct Project
 #if SOUP_LINUX
 			name.insert(0, "lib");
 #endif
-			name.append(soup::Compiler::getDynamicLibraryExtension());
+			name.append(getCompiler().getDynamicLibraryExtension());
 		}
 		else
 		{
