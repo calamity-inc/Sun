@@ -38,6 +38,7 @@ struct Project
 	std::filesystem::path sunfile;
 	std::string name;
 	std::vector<Dependency> dependencies{};
+	std::string prog = "clang";
 	std::string cpp_version{};
 	soup::AtomicStack<std::filesystem::path> cpps{};
 	bool opt_static = false;
@@ -231,6 +232,12 @@ struct Project
 				continue;
 			}
 
+			if (line.substr(0, 9) == "compiler ")
+			{
+				prog = line.substr(9);
+				continue;
+			}
+
 			std::cout << "Ignoring line with unknown data: " << line << "\n";
 		_continue_2:;
 		}
@@ -266,6 +273,10 @@ struct Project
 #else
 		auto hash = soup::joaat::hash("linux");
 #endif
+		if (prog != "clang")
+		{
+			hash = soup::joaat::concat(hash, prog);
+		}
 		for (const auto& extra_arg : extra_args)
 		{
 			hash = soup::joaat::concat(hash, extra_arg);
@@ -297,6 +308,7 @@ struct Project
 	[[nodiscard]] soup::Compiler getCompiler() const
 	{
 		soup::Compiler compiler;
+		compiler.prog = prog;
 		if (!cpp_version.empty())
 		{
 			compiler.lang = "c++";

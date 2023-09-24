@@ -85,3 +85,11 @@ if windows
 linker_arg -lKernel32
 endif
 ```
+
+## Compiler
+
+You can specify a compiler other than Clang. For example, to build Emscripten projects with Sun:
+
+```
+compiler em++
+```
