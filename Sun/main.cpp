@@ -399,7 +399,7 @@ struct Project
 #endif
 				}
 			}
-			std::cout << ">>> Time for the main attraction.\n";
+			std::cout << ">>> Now compiling " << getName() << "\n";
 		}
 
 		SharedCompileData data;
