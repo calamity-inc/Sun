@@ -36,3 +36,20 @@ jobs:
         with:
           name: "MacOS (X86)"
           path: suncli
+
+  windows-latest:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Soup
+        run: php Sun/vendor/Soup/build_lib.php
+
+      - name: Build Sun
+        run: clang -o Sun.exe Sun/sun.cpp -ISun/vendor/Soup libsoup.a -std=c++17
+
+      - name: Upload Sun
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows
+          path: Sun.exe
