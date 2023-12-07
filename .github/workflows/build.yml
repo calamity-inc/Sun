@@ -1,0 +1,21 @@
+name: Build
+
+on: push
+
+jobs:
+  ubuntu-20-04:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Soup
+        run: php Sun/vendor/Soup/build_lib.php
+
+      - name: Build Sun
+        run: clang -o suncli Sun/sun.cpp -ISun/vendor/Soup libsoup.a -std=c++20
+
+      - name: Upload Sun
+        uses: actions/upload-artifact@v3
+        with:
+          name: "Ubuntu 20.04"
+          path: suncli

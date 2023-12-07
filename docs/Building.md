@@ -19,7 +19,7 @@ cd Soup
 php build_lib.php
 cd ..
 cd Sun
-clang -o suncli Sun/main.cpp -I../Soup ../Soup/libsoup.a -std=c++20 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
+clang -o suncli Sun/sun.cpp -I../Soup ../Soup/libsoup.a -std=c++20 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
 ```
 
 You can then use the following command to make the "suncli" executable globally available as "sun":

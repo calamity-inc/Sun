@@ -4,3 +4,4 @@ bin/
 *.lib
 *.o
 *.nupkg
+libsoup.a
