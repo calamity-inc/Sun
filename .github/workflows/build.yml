@@ -19,3 +19,20 @@ jobs:
         with:
           name: "Debian 10 and above"
           path: suncli
+
+  macos-latest:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Soup
+        run: php Sun/vendor/Soup/build_lib.php
+
+      - name: Build Sun
+        run: clang -o suncli Sun/sun.cpp -ISun/vendor/Soup libsoup.a -std=c++17 -lstdc++
+
+      - name: Upload Sun
+        uses: actions/upload-artifact@v3
+        with:
+          name: "MacOS (X86)"
+          path: suncli
