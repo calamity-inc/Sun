@@ -1,0 +1,9 @@
+{
+    "path": ["bin/Release/Sun.exe"],
+    "dependencies": [
+        {
+            "id": "llvm",
+            "version": "15.0.0"
+        }
+    ]
+}
