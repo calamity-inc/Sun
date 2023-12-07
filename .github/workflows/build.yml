@@ -12,7 +12,7 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -o suncli Sun/sun.cpp -ISun/vendor/Soup libsoup.a -std=c++17
+        run: clang -o suncli Sun/sun.cpp -ISun/vendor/Soup libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
 
       - name: Upload Sun
         uses: actions/upload-artifact@v3
