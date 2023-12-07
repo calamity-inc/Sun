@@ -1,6 +1,229 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="vendor\Soup\soup\Compiler.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\joaat.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\main.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\os.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\string.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\StringMatch.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="sun.cpp" />
+    <ClCompile Include="vendor\Soup\soup\unicode.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\Capture.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\Thread.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\Key.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\Window.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\base.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\RenderTarget.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\Canvas.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\RasterFont.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\TinyPngOut.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\Rgb.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\adler32.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\crc32.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="vendor">
+      <UniqueIdentifier>{8eadb994-7960-46b8-9fef-5a01f30bd18c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\Soup">
+      <UniqueIdentifier>{a23bcb48-4d39-4d5c-a217-6a152109c623}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="vendor\Soup\soup\AtomicStack.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Compiler.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\joaat.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\main.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\os.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\string.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\StringMatch.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Thread.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\PoppedNode.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\base.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\fwd.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\unicode.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Optional.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Capture.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Key.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\deleter.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\LcgRng.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\type_traits.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\UniquePtr.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\StringBuilder.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Endian.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\IntStruct.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\StringLiteral.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\format.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\AllocRaiiVirtual.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\AllocRaiiLocalBase.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\memProtFlags.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Rgb.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Exception.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\ObfusString.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\rand.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\macros.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\SelfDeletingThread.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Ps2Scancode.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Window.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\RenderTarget.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\RenderTargetWindow.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\math.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Vector2.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\VectorBase.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Canvas.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\RasterFont.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\console.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Callback.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\ioSeekableReader.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Reader.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\ioBase.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\StringWriter.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\Writer.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\TinyPngOut.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\adler32.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\crc32.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
