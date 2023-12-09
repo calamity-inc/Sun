@@ -195,9 +195,17 @@ struct Project
 				{
 					val = SOUP_WINDOWS;
 				}
+				else if (condition == "macos")
+				{
+					val = SOUP_MACOS;
+				}
 				else if (condition == "linux")
 				{
 					val = SOUP_LINUX;
+				}
+				else if (condition == "x86")
+				{
+					val = SOUP_X86;
 				}
 				else if (condition == "true")
 				{

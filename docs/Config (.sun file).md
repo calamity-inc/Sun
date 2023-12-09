@@ -76,7 +76,7 @@ if [not] <condition>
 endif
 ```
 
-Valid substitutions for `<condition>` are as follows: `windows`, `linux`, `true`, `false`.
+Valid substitutions for `<condition>` are as follows: `windows`, `macos`, `linux`, `x86`, `true`, `false`.
 
 An example:
 
