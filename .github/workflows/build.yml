@@ -20,8 +20,8 @@ jobs:
           name: "Debian 10 and above"
           path: suncli
 
-  macos-latest:
-    runs-on: macos-latest
+  macos-13:
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v3
 
