@@ -383,7 +383,7 @@ struct Project
 					if (!opt_static)
 					{
 						// Tell linker to include the static library
-						compiler.extra_linker_args.emplace_back(soup::string::fixType(dep_proj.getOutFile(dep_name).u8string()));
+						compiler.extra_linker_args.emplace_back(soup::string::fixType(dep_proj.getOutFile().u8string()));
 					}
 				}
 				else //if (dep_proj.opt_dynamic)
@@ -505,11 +505,7 @@ struct Project
 
 	[[nodiscard]] std::filesystem::path getOutFile() const
 	{
-		return getOutFile(getName());
-	}
-
-	[[nodiscard]] std::filesystem::path getOutFile(std::string name) const
-	{
+		std::string name = getName();
 		if (opt_static)
 		{
 			name.append(soup::Compiler::getStaticLibraryExtension());
@@ -517,7 +513,10 @@ struct Project
 		else if (opt_dynamic)
 		{
 #if SOUP_LINUX
-			name.insert(0, "lib");
+			if (!getCompiler().isCrossCompiler())
+			{
+				name.insert(0, "lib");
+			}
 #endif
 			name.append(getCompiler().getDynamicLibraryExtension());
 		}
@@ -713,7 +712,7 @@ int entry(std::vector<std::string>&& args, bool console)
 			{
 				std::cout << ">>> Running...\n";
 				args.erase(args.cbegin(), args.cbegin() + 2);
-				std::cout << soup::os::execute(soup::string::fixType(proj.getOutFile(outname).u8string()), std::move(args));
+				std::cout << soup::os::execute(soup::string::fixType(proj.getOutFile().u8string()), std::move(args));
 			}
 
 			return E_OK;
