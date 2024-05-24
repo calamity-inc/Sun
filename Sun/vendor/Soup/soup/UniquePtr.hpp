@@ -1,10 +1,11 @@
 #pragma once
 
-#include "type_traits.hpp"
-
 #include <utility> // forward
 
-namespace soup
+#include "base.hpp"
+#include "type_traits.hpp"
+
+NAMESPACE_SOUP
 {
 	// Why not std::unique_ptr?
 	// - Stores a deleter despite being templated
@@ -67,7 +68,8 @@ namespace soup
 			const auto old_data = data;
 			data = b.data;
 			b.data = nullptr;
-			if (old_data != nullptr)
+			// "if ptr is a null pointer, the standard library deallocation functions do nothing"
+			//if (old_data != nullptr)
 			{
 				delete old_data;
 			}

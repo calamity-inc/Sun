@@ -1,11 +1,29 @@
 #include "string.hpp"
 
-#include <filesystem>
 #include <fstream>
 #include <streambuf>
 
-namespace soup
+#include "filesystem.hpp"
+
+NAMESPACE_SOUP
 {
+	std::string string::escape(const std::string& str)
+	{
+		std::string res;
+
+		res.reserve(str.size() + 2);
+		res.insert(0, 1, ' ');
+		res.append(str);
+
+		string::replaceAll(res, "\\", "\\\\");
+		string::replaceAll(res, "\"", "\\\"");
+
+		res.at(0) = '\"';
+		res.push_back('\"');
+
+		return res;
+	}
+
 	std::string string::join(const std::vector<std::string>& arr, const char glue)
 	{
 		std::string res{};
@@ -73,44 +91,55 @@ namespace soup
 		return res;
 	}
 
-	std::string string::fromFile(const std::string& file)
+	std::string string::fromFile(const char* file)
 	{
-#if SOUP_CPP20
-		return fromFilePath(toUtf8Type(file));
-#else
-		return fromFilePath(std::filesystem::u8path(file));
-#endif
+		return fromFile(soup::filesystem::u8path(file));
 	}
 
-	std::string string::fromFilePath(const std::filesystem::path& file)
+	std::string string::fromFile(const std::string& file)
 	{
-		std::string ret{};
+		return fromFile(soup::filesystem::u8path(file));
+	}
+
+	std::string string::fromFile(const std::filesystem::path& file)
+	{
+		std::string ret;
 		if (std::filesystem::exists(file))
 		{
-			std::ifstream t(file, std::ios::binary);
+			size_t len;
+			if (auto addr = soup::filesystem::createFileMapping(file, len))
+			{
+				ret = std::string((const char*)addr, len);
+				soup::filesystem::destroyFileMapping(addr, len);
+			}
+			else // File might be open in another process, causing memory mapping to fail.
+			{
+				std::ifstream t(file, std::ios::binary);
 
-			t.seekg(0, std::ios::end);
-			const size_t s = t.tellg();
-			t.seekg(0, std::ios::beg);
+				t.seekg(0, std::ios::end);
+				const auto s = static_cast<size_t>(t.tellg());
+				t.seekg(0, std::ios::beg);
 
-			ret.reserve(s);
-			ret.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+				ret.reserve(s);
+				ret.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+			}
 		}
 		return ret;
 	}
 
-	void string::toFile(const std::string& file, const std::string& contents)
+	void string::toFile(const char* file, const std::string& contents)
 	{
-#if SOUP_CPP20
-		return toFilePath(toUtf8Type(file), contents);
-#else
-		return toFilePath(std::filesystem::u8path(file), contents);
-#endif
+		return toFile(soup::filesystem::u8path(file), contents);
 	}
 
-	void string::toFilePath(const std::filesystem::path& file, const std::string& contents)
+	void string::toFile(const std::string& file, const std::string& contents)
 	{
-		std::ofstream of(file);
+		return toFile(soup::filesystem::u8path(file), contents);
+	}
+
+	void string::toFile(const std::filesystem::path& file, const std::string& contents)
+	{
+		std::ofstream of(file, std::ios_base::binary);
 		of << contents;
 	}
 }

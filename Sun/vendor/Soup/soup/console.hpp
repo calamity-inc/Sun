@@ -21,7 +21,7 @@
 #define OSC ESC "]"
 #define ST  ESC "\\"
 
-namespace soup
+NAMESPACE_SOUP
 {
 	class console_impl
 	{
@@ -36,6 +36,9 @@ namespace soup
 #endif
 
 	public:
+		using char_handler_t = void(*)(char32_t);
+		using control_handler_t = void(*)(ControlInput);
+
 		EventHandler<void(char32_t)> char_handler;
 		EventHandler<void(ControlInput)> control_handler;
 	private:
@@ -173,10 +176,8 @@ namespace soup
 	inline console_impl console;
 }
 
-#ifndef SOUP_CONSOLE_MACROS
 #undef BEL
 #undef ESC
 #undef CSI
 #undef OSC
 #undef ST
-#endif

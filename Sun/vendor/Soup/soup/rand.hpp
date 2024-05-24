@@ -1,12 +1,14 @@
 #pragma once
 
 #include <random>
+#include <string>
 
+#include "base.hpp"
 #include "macros.hpp"
 
 #define ARRAY_RAND(arr) arr[::soup::rand(0, COUNT(arr) - 1)]
 
-namespace soup
+NAMESPACE_SOUP
 {
 	class rand_impl
 	{
@@ -100,6 +102,8 @@ namespace soup
 			}
 			return str;
 		}
+
+		[[nodiscard]] static std::string binstr(size_t len);
 
 		template <size_t S>
 		static void fill(uint8_t(&arr)[S]) noexcept

@@ -9,7 +9,7 @@
 #include "crc32.hpp"
 #include "Endian.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
 	TinyPngOut::TinyPngOut(uint32_t w, uint32_t h, Writer& out)
 		: width(w),
@@ -128,7 +128,7 @@ namespace soup
 					n = std::min(n, static_cast<decltype(n)>(std::numeric_limits<size_t>::max()));
 				}
 				assert(n > 0);
-				output.write(reinterpret_cast<const char*>(pixels), static_cast<size_t>(n));
+				output.raw(const_cast<uint8_t*>(pixels), static_cast<size_t>(n));
 
 				// Update checksums
 				updateCrc(pixels, n);
@@ -182,7 +182,7 @@ namespace soup
 
 	void TinyPngOut::putBigUint32(uint32_t val, uint8_t arr[4])
 	{
-		if constexpr (NATIVE_ENDIAN == LITTLE_ENDIAN)
+		if constexpr (ENDIAN_NATIVE == ENDIAN_LITTLE)
 		{
 			*reinterpret_cast<uint32_t*>(&arr[0]) = Endianness::invert(val);
 		}

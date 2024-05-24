@@ -2,18 +2,23 @@
 
 #include <cstdint>
 
-namespace soup
+#include "base.hpp"
+
+NAMESPACE_SOUP
 {
 	// algos.rng.interface
 	struct RngInterface;
+	struct StatelessRngInterface;
 
 	// audio
 	class audPlayback;
 	struct audSound;
 
 	// crypto
+	struct CertStore;
 	struct RsaKeypair;
-	struct TrustStore;
+	struct RsaPrivateKey;
+	class TrustStore;
 	class YubikeyValidator;
 
 	// crypto.x509
@@ -42,14 +47,17 @@ namespace soup
 	class drData;
 
 	// data.regex
-	struct RegexConstraintTransitionable;
+	struct RegexConstraint;
 	struct RegexGroup;
 	struct RegexMatcher;
+	struct RegexTransitionsVector;
 
 	// data.xml
 	struct PlistDict;
 	struct PlistArray;
 	struct PlistString;
+	struct XmlMode;
+	struct XmlNode;
 	struct XmlTag;
 	struct XmlText;
 
@@ -67,21 +75,22 @@ namespace soup
 	class BitWriter;
 
 	// io.stream
-	class ioSeekableReader;
 	class Reader;
 	class StringReader;
 	class Writer;
+	class StringWriter;
 
-	// lang
+	// lang.compiler
 	struct astBlock;
 	struct astNode;
 	class LangDesc;
 	struct Lexeme;
+	struct LexemeParser;
 	class ParserState;
 	struct Token;
 
-	// lang.agnostic
-	struct aglTranspiler;
+	// lang.compiler.ir
+	struct irFunction;
 
 	// lang.reflection
 	struct rflFunc;
@@ -91,7 +100,6 @@ namespace soup
 
 	// ling.chatbot
 	struct cbCmd;
-	class cbParser;
 
 	// math
 	class Bigint;
@@ -99,24 +107,25 @@ namespace soup
 	struct Vector3;
 
 	// math.3d
-	struct BoxCorners;
 	class Matrix;
 	struct Mesh;
 	struct Poly;
 	class Quaternion;
 	struct Ray;
 
+	// math.3d.geometry
+	struct gmBoxCorners;
+
 	// math.3d.scene
 	struct Scene;
 
 	// mem
-	struct Pattern;
+	class Pattern;
 	struct CompiletimePatternWithOptBytesBase;
 	class Pointer;
 	class Range;
 	template <typename T> class SharedPtr;
 	template <typename T> class UniquePtr;
-	struct VirtualRegion;
 	template <class T> class WeakRef;
 
 	// mem.alloc
@@ -126,10 +135,7 @@ namespace soup
 
 	// mem.vft
 	struct memVft;
-	namespace rtti
-	{
-		struct object;
-	}
+	struct RttiObject;
 
 	// misc.chess
 	struct ChessCoordinate;
@@ -138,6 +144,7 @@ namespace soup
 	class IpAddr;
 	struct netConfig;
 	class netIntel;
+	enum netStatus : uint8_t;
 	class Server;
 	struct ServerService;
 	struct ServerServiceUdp;
@@ -152,7 +159,6 @@ namespace soup
 
 	// net.tls
 	class SocketTlsHandshaker;
-	struct TlsServerRsaData;
 	struct TlsClientHello;
 
 	// net.web

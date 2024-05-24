@@ -1,10 +1,12 @@
 #pragma once
 
+#include <sstream>
 #include <string>
 
+#include "base.hpp"
 #include "type_traits.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
 	// For format strings known at compile-time, std::format is faster.
 	// Although the way std::format deals with custom types requires more boilerplate and ends up making it lose its time advantage.
@@ -29,7 +31,15 @@ namespace soup
 		return std::to_string(v);
 	}
 
-	template <typename In, SOUP_RESTRICT(!std::is_arithmetic_v<In>)>
+	template <typename In, SOUP_RESTRICT(std::is_void_v<std::remove_pointer_t<In>>)>
+	std::string format_toString(const void* v)
+	{
+		std::stringstream stream;
+		stream << v;
+		return stream.str();
+	}
+
+	template <typename In, SOUP_RESTRICT(!std::is_arithmetic_v<In> && !std::is_void_v<std::remove_pointer_t<In>>)>
 	std::string format_toString(const In& v)
 	{
 		return v.toString();

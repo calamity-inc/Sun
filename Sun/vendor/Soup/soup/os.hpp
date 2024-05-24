@@ -2,8 +2,8 @@
 
 #include "base.hpp"
 #include "fwd.hpp"
+#include "type.hpp"
 
-#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -12,16 +12,11 @@
 #include <Winternl.h>
 #endif
 
-namespace soup
+NAMESPACE_SOUP
 {
 	class os
 	{
 	public:
-		[[nodiscard]] static intptr_t filesize(const std::filesystem::path& path); // returns -1 on error
-
-		[[nodiscard]] static std::filesystem::path tempfile(const std::string& ext = {});
-		[[nodiscard]] static std::filesystem::path getProgramData();
-
 		static void escape(std::string& str);
 	private:
 		static void escapeNoCheck(std::string& str);
@@ -39,18 +34,10 @@ namespace soup
 		static void virtualFree(void* addr, size_t len);
 		static void changeProtection(void* addr, size_t len, int prot);
 
-		[[nodiscard]] static void* createFileMapping(std::filesystem::path path, size_t& out_len);
-		static void destroyFileMapping(void* addr, size_t len);
-
-		[[nodiscard]] static unsigned int getProcessId() noexcept;
+		[[nodiscard]] static pid_t getProcessId() noexcept;
 
 #if SOUP_WINDOWS
-		static void simulateKeyPress(Key key);
-		static void simulateKeyPress(bool ctrl, bool shift, bool alt, Key key);
-		static void simulateKeyPress(bool ctrl, bool shift, bool alt, bool meta, Key key);
-		static void simulateKeyPress(const std::vector<Key>& keys);
-		static void simulateKeyDown(Key key);
-		static void simulateKeyRelease(Key key);
+		static bool copyToClipboard(const std::string& text);
 
 		[[nodiscard]] static size_t getMemoryUsage();
 
@@ -58,7 +45,17 @@ namespace soup
 
 		[[nodiscard]] static PEB* getCurrentPeb();
 
-		static void stop();
+		[[nodiscard]] static std::string makeScreenshotBmp(int x, int y, int width, int height);
+
+		[[nodiscard]] static int getPrimaryScreenWidth()
+		{
+			return GetSystemMetrics(SM_CXSCREEN);
+		}
+
+		[[nodiscard]] static int getPrimaryScreenHeight()
+		{
+			return GetSystemMetrics(SM_CYSCREEN);
+		}
 #endif
 	};
 }

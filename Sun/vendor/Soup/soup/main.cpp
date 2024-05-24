@@ -7,7 +7,7 @@
 
 #include "unicode.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
 #if SOUP_WINDOWS
 	int main_impl::windows_gui(entrypoint_t entrypoint, LPWSTR lpCmdLine)
@@ -36,7 +36,7 @@ namespace soup
 		{
 			args.emplace_back(unicode::utf16_to_utf8<std::wstring>(argv[i]));
 		}
-		return entrypoint(std::move(args), true);
+		return entrypoint(std::move(args), console);
 	}
 #else
 	int main_impl::cli(int argc, const char** argv, entrypoint_t entrypoint)

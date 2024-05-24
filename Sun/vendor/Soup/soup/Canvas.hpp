@@ -8,7 +8,7 @@
 
 #include "Rgb.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
 	class Canvas
 	{
@@ -60,14 +60,14 @@ namespace soup
 
 		[[nodiscard]] std::string toString(bool explicit_nl) const;
 		[[nodiscard]] std::string toStringDoublewidth(bool explicit_nl) const;
-		[[nodiscard]] std::u16string toStringDownsampled(bool explicit_nl);
-		[[nodiscard]] std::u16string toStringDownsampledDoublewidth(bool explicit_nl);
-		[[nodiscard]] std::string toStringDownsampledDoublewidthUtf8(bool explicit_nl);
+		[[nodiscard]] std::u16string toStringDownsampled(bool explicit_nl, bool reset_on_nl);
+		[[nodiscard]] std::u16string toStringDownsampledDoublewidth(bool explicit_nl, bool reset_on_nl);
+		[[nodiscard]] std::string toStringDownsampledDoublewidthUtf8(bool explicit_nl, bool reset_on_nl);
 	private:
 		[[nodiscard]] static char16_t downsampleChunkToChar(uint8_t chunkset) noexcept;
 
 	public:
-		[[nodiscard]] static Canvas fromBmp(ioSeekableReader& r);
+		[[nodiscard]] static Canvas fromBmp(Reader& r);
 
 		[[nodiscard]] std::string toSvg(unsigned int scale = 1) const;
 		[[nodiscard]] std::string toPng() const;

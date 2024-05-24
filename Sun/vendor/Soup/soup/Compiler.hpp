@@ -3,7 +3,9 @@
 #include <string>
 #include <vector>
 
-namespace soup
+#include "base.hpp"
+
+NAMESPACE_SOUP
 {
 	struct Compiler
 	{
@@ -16,7 +18,8 @@ namespace soup
 
 		Compiler();
 
-		[[nodiscard]] bool isEmscripten() const;
+		[[nodiscard]] bool isEmscripten() const noexcept;
+		[[nodiscard]] bool isCrossCompiler() const noexcept;
 
 		[[nodiscard]] std::vector<std::string> getArgs() const;
 		void addLinkerArgs(std::vector<std::string>& args) const;

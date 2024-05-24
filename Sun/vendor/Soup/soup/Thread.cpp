@@ -1,10 +1,11 @@
 #include "Thread.hpp"
+#if !SOUP_WASM
 
 #include "Exception.hpp"
 #include "format.hpp"
 #include "SelfDeletingThread.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
 	Thread::Thread(void(*f)(Capture&&), Capture&& cap)
 	{
@@ -19,10 +20,18 @@ namespace soup
 	{
 		auto t = reinterpret_cast<Thread*>(handover);
 		t->f(std::move(t->f_cap));
-		t->running = false;
 		t->f_cap.reset();
-		if (t->is_self_deleting)
+		const bool is_self_deleting = t->is_self_deleting;
+		t->running = false;
+		if (is_self_deleting)
 		{
+#if SOUP_WINDOWS
+			CloseHandle(t->handle);
+			t->handle = INVALID_HANDLE_VALUE;
+#else
+			pthread_detach(t->handle);
+			t->have_handle = false;
+#endif
 			delete static_cast<SelfDeletingThread*>(t);
 		}
 	}
@@ -69,22 +78,15 @@ namespace soup
 #if SOUP_WINDOWS
 		if (handle != INVALID_HANDLE_VALUE)
 		{
-			if (running)
-			{
-				TerminateThread(handle, 0);
-			}
+			awaitCompletion();
 			CloseHandle(handle);
 		}
 #else
-		if (have_handle)
-		{
-			pthread_detach(handle);
-			pthread_cancel(handle);
-		}
+		awaitCompletion();
 #endif
 	}
 
-#if SOUP_WINDOWS || (SOUP_POSIX && !SOUP_MACOS)
+#if SOUP_WINDOWS || SOUP_LINUX
 	void Thread::setTimeCritical() noexcept
 	{
 #if SOUP_WINDOWS
@@ -95,26 +97,13 @@ namespace soup
 	}
 #endif
 
-	void Thread::stop() noexcept
-	{
-#if SOUP_WINDOWS
-		TerminateThread(handle, 0);
-		running = false;
-#else
-		if (have_handle)
-		{
-			pthread_detach(handle);
-			pthread_cancel(handle);
-			have_handle = false;
-			running = false;
-		}
-#endif
-	}
-
 	void Thread::awaitCompletion() noexcept
 	{
 #if SOUP_WINDOWS
-		WaitForSingleObject(handle, INFINITE);
+		if (handle != INVALID_HANDLE_VALUE)
+		{
+			WaitForSingleObject(handle, INFINITE);
+		}
 #else
 		if (have_handle)
 		{
@@ -141,3 +130,5 @@ namespace soup
 #endif
 	}
 }
+
+#endif

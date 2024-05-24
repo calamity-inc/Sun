@@ -1,75 +1,30 @@
 #include "os.hpp"
 
 #include <array>
-#include <cstdio>
 #include <cstring> // memcpy
 #include <fstream>
 
 #if SOUP_WINDOWS
-#include <Psapi.h>
-#include <ShlObj.h> // CSIDL_COMMON_APPDATA
+#pragma comment(lib, "Gdi32.lib")
 
-#pragma comment(lib, "Shell32.lib") // SHGetFolderPathW
-#pragma comment(lib, "User32.lib") // SendInput
+#include <Psapi.h>
 
 #include "Exception.hpp"
-#include "Key.hpp"
 #include "ObfusString.hpp"
 #else
 #include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <unistd.h> // getpid
 #endif
 
 #include "AllocRaiiVirtual.hpp"
+#include "filesystem.hpp"
 #include "rand.hpp"
 #include "string.hpp"
+#include "unicode.hpp"
 #include "UniquePtr.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
-	intptr_t os::filesize(const std::filesystem::path& path)
-	{
-		// This is not guaranteed to work, but works on UNIX, and on Windows in binary mode.
-		std::ifstream in(path, std::ifstream::ate | std::ifstream::binary);
-		return in.tellg();
-	}
-
-	std::filesystem::path os::tempfile(const std::string& ext)
-	{
-		std::filesystem::path path;
-		do
-		{
-			auto file = rand.str<std::string>(20);
-			if (!ext.empty())
-			{
-				if (ext.at(0) != '.')
-				{
-					file.push_back('.');
-				}
-				file.append(ext);
-			}
-			path = std::filesystem::temp_directory_path();
-			path /= file;
-		} while (std::filesystem::exists(path));
-		return path;
-	}
-
-	std::filesystem::path os::getProgramData()
-	{
-#if SOUP_WINDOWS
-		wchar_t szPath[MAX_PATH];
-		if (SHGetFolderPathW(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath) == 0)
-		{
-			return szPath;
-		}
-		return "C:\\ProgramData";
-#else
-		return "/var/lib";
-#endif
-	}
-
 	void os::escape(std::string& str)
 	{
 		if (str.find(' ') != std::string::npos)
@@ -106,7 +61,7 @@ namespace soup
 			}
 			flatargs.append(escaped);
 		}
-		auto args_file = os::tempfile();
+		auto args_file = filesystem::tempfile();
 		{
 			std::ofstream argsof(args_file);
 			argsof << std::move(flatargs);
@@ -211,52 +166,7 @@ namespace soup
 #endif
 	}
 
-	void* os::createFileMapping(std::filesystem::path path, size_t& out_len)
-	{
-		void* addr = nullptr;
-#if SOUP_WINDOWS
-		HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-		SOUP_IF_LIKELY (f != INVALID_HANDLE_VALUE)
-		{
-			LARGE_INTEGER liSize;
-			SOUP_IF_LIKELY (GetFileSizeEx(f, &liSize))
-			{
-				out_len = liSize.QuadPart;
-				HANDLE m = CreateFileMappingA(f, nullptr, PAGE_READONLY, liSize.HighPart, liSize.LowPart, NULL);
-				SOUP_IF_LIKELY (m != NULL)
-				{
-					addr = MapViewOfFile(m, FILE_MAP_READ, 0, 0, liSize.QuadPart);
-					CloseHandle(m);
-				}
-			}
-			CloseHandle(f);
-		}
-#else
-		int f = ::open(path.c_str(), O_RDONLY | O_CLOEXEC);
-		SOUP_IF_LIKELY (f != -1)
-		{
-			struct stat st;
-			SOUP_IF_LIKELY (fstat(f, &st) != -1)
-			{
-				out_len = st.st_size;
-				addr = mmap(nullptr, st.st_size, PROT_READ, MAP_SHARED, f, 0);
-			}
-			::close(f);
-		}
-#endif
-		return addr;
-	}
-
-	void os::destroyFileMapping(void* addr, size_t len)
-	{
-#if SOUP_WINDOWS
-		UnmapViewOfFile(addr);
-#else
-		munmap(addr, len);
-#endif
-	}
-
-	unsigned int os::getProcessId() noexcept
+	pid_t os::getProcessId() noexcept
 	{
 #if SOUP_WINDOWS
 		return GetCurrentProcessId();
@@ -266,71 +176,32 @@ namespace soup
 	}
 
 #if SOUP_WINDOWS
-	void os::simulateKeyPress(Key key)
+	static bool copy_to_clipboard_utf16(const std::wstring& text)
 	{
-		return simulateKeyPress(std::vector<Key>{ key });
-	}
-
-	void os::simulateKeyPress(bool ctrl, bool shift, bool alt, Key key)
-	{
-		return simulateKeyPress(ctrl, shift, alt, false, key);
-	}
-
-	void os::simulateKeyPress(bool ctrl, bool shift, bool alt, bool meta, Key key)
-	{
-		std::vector<Key> keys{};
-		keys.reserve(5);
-		if (ctrl) keys.emplace_back(KEY_LCTRL);
-		if (shift) keys.emplace_back(KEY_LSHIFT);
-		if (alt) keys.emplace_back(KEY_LALT);
-		if (meta) keys.emplace_back(KEY_LMETA);
-		keys.emplace_back(key);
-		simulateKeyPress(keys);
-	}
-
-	void os::simulateKeyPress(const std::vector<Key>& keys)
-	{
-		for (auto i = keys.cbegin(); i != keys.cend(); ++i)
+		const size_t len = (text.length() + 1) * sizeof(wchar_t);
+		HGLOBAL hMem = GlobalAlloc(GHND | GMEM_DDESHARE, len);
+		if (hMem != nullptr)
 		{
-			simulateKeyDown(*i);
+			void* pMem = GlobalLock(hMem);
+			if (pMem != nullptr)
+			{
+				memcpy(pMem, text.data(), len);
+				GlobalUnlock(hMem);
+				if (OpenClipboard(nullptr))
+				{
+					bool success = (EmptyClipboard() && SetClipboardData(CF_UNICODETEXT, hMem) != nullptr);
+					CloseClipboard();
+					return success;
+				}
+				GlobalFree(hMem);
+			}
 		}
-
-		for (auto i = keys.crbegin(); i != keys.crend(); ++i)
-		{
-			simulateKeyRelease(*i);
-		}
+		return false;
 	}
 
-	void os::simulateKeyDown(Key key)
+	bool os::copyToClipboard(const std::string& text)
 	{
-		INPUT input;
-		input.type = INPUT_KEYBOARD;
-		input.ki.wVk = soup_key_to_virtual_key(key);
-		input.ki.wScan = soup_key_to_ps2_scancode(key);
-		input.ki.dwFlags = 0;
-		if (input.ki.wScan & 0xE000)
-		{
-			input.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
-		}
-		input.ki.time = 0;
-		input.ki.dwExtraInfo = 0;
-		SendInput(1, &input, sizeof(INPUT));
-	}
-
-	void os::simulateKeyRelease(Key key)
-	{
-		INPUT input;
-		input.type = INPUT_KEYBOARD;
-		input.ki.wVk = soup_key_to_virtual_key(key);
-		input.ki.wScan = soup_key_to_ps2_scancode(key);
-		input.ki.dwFlags = KEYEVENTF_KEYUP;
-		if (input.ki.wScan & 0xE000)
-		{
-			input.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
-		}
-		input.ki.time = 0;
-		input.ki.dwExtraInfo = 0;
-		SendInput(1, &input, sizeof(INPUT));
+		return copy_to_clipboard_utf16(unicode::utf8_to_utf16(text));
 	}
 
 	size_t os::getMemoryUsage()
@@ -360,22 +231,97 @@ namespace soup
 		return ProcessInformation.PebBaseAddress;
 	}
 
-	void os::stop()
+	[[nodiscard]] static std::string HBMITMAP_to_BMP(HBITMAP hBitmap)
 	{
-		auto ntdll = LoadLibraryA(ObfusString("ntdll.dll"));
+		HDC hDC;
+		int iBits;
+		WORD wBitCount;
+		DWORD dwPaletteSize = 0, dwBmBitsSize = 0, dwDIBSize = 0;
+		BITMAP Bitmap0;
+		BITMAPFILEHEADER bmfHdr;
+		BITMAPINFOHEADER bi;
+		LPBITMAPINFOHEADER lpbi;
+		HANDLE hDib, hPal, hOldPal2 = NULL;
+		hDC = CreateDCA("DISPLAY", NULL, NULL, NULL);
+		iBits = GetDeviceCaps(hDC, BITSPIXEL) * GetDeviceCaps(hDC, PLANES);
+		DeleteDC(hDC);
+		if (iBits <= 1)
+			wBitCount = 1;
+		else if (iBits <= 4)
+			wBitCount = 4;
+		else if (iBits <= 8)
+			wBitCount = 8;
+		else
+			wBitCount = 24;
+		GetObject(hBitmap, sizeof(Bitmap0), (LPSTR)&Bitmap0);
+		bi.biSize = sizeof(BITMAPINFOHEADER);
+		bi.biWidth = Bitmap0.bmWidth;
+		bi.biHeight = -Bitmap0.bmHeight;
+		bi.biPlanes = 1;
+		bi.biBitCount = wBitCount;
+		bi.biCompression = BI_RGB;
+		bi.biSizeImage = 0;
+		bi.biXPelsPerMeter = 0;
+		bi.biYPelsPerMeter = 0;
+		bi.biClrImportant = 0;
+		bi.biClrUsed = 256;
+		dwBmBitsSize = ((Bitmap0.bmWidth * wBitCount + 31) & ~31) / 8
+			* Bitmap0.bmHeight;
+		hDib = GlobalAlloc(GHND, dwBmBitsSize + dwPaletteSize + sizeof(BITMAPINFOHEADER));
+		lpbi = (LPBITMAPINFOHEADER)GlobalLock(hDib);
+		*lpbi = bi;
 
-		using NtRaiseHardError_t = NTSTATUS(NTAPI*)(NTSTATUS ErrorStatus, ULONG NumberOfParameters, ULONG UnicodeStringParameterMask OPTIONAL, PULONG_PTR Parameters, ULONG ResponseOption, PULONG Response);
-		using RtlAdjustPrivilege_t = NTSTATUS(NTAPI*)(ULONG Privilege, BOOLEAN Enable, BOOLEAN CurrentThread, PBOOLEAN Enabled);
+		hPal = GetStockObject(DEFAULT_PALETTE);
+		if (hPal)
+		{
+			hDC = GetDC(NULL);
+			hOldPal2 = SelectPalette(hDC, (HPALETTE)hPal, FALSE);
+			RealizePalette(hDC);
+		}
 
-		auto RtlAdjustPrivilege = (RtlAdjustPrivilege_t)GetProcAddress(ntdll, ObfusString("RtlAdjustPrivilege"));
-		auto NtRaiseHardError = (NtRaiseHardError_t)GetProcAddress(ntdll, ObfusString("NtRaiseHardError"));
 
-		// Enable SeShutdownPrivilege
-		BOOLEAN bEnabled;
-		RtlAdjustPrivilege(19, TRUE, FALSE, &bEnabled);
+		GetDIBits(hDC, hBitmap, 0, (UINT)Bitmap0.bmHeight, (LPSTR)lpbi + sizeof(BITMAPINFOHEADER)
+			+ dwPaletteSize, (BITMAPINFO*)lpbi, DIB_RGB_COLORS);
 
-		ULONG uResp;
-		NtRaiseHardError(STATUS_ASSERTION_FAILURE, 0, 0, NULL, 6, &uResp);
+		if (hOldPal2)
+		{
+			SelectPalette(hDC, (HPALETTE)hOldPal2, TRUE);
+			RealizePalette(hDC);
+			ReleaseDC(NULL, hDC);
+		}
+
+		bmfHdr.bfType = 0x4D42; // "BM"
+		dwDIBSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPaletteSize + dwBmBitsSize;
+		bmfHdr.bfSize = dwDIBSize;
+		bmfHdr.bfReserved1 = 0;
+		bmfHdr.bfReserved2 = 0;
+		bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
+
+		std::string data;
+		data.reserve(sizeof(BITMAPFILEHEADER) + dwDIBSize);
+		data.append((const char*)&bmfHdr, sizeof(BITMAPFILEHEADER));
+		data.append((const char*)lpbi, dwDIBSize);
+
+		GlobalUnlock(hDib);
+		GlobalFree(hDib);
+
+		return data;
+	}
+
+	std::string os::makeScreenshotBmp(int x, int y, int width, int height)
+	{
+		HDC dcScreen = GetDC(0);
+		HDC dcTarget = CreateCompatibleDC(dcScreen);
+		HBITMAP bmpTarget = CreateCompatibleBitmap(dcScreen, width, height);
+		HGDIOBJ oldBmp = SelectObject(dcTarget, bmpTarget);
+		BitBlt(dcTarget, 0, 0, width, height, dcScreen, x, y, SRCCOPY | CAPTUREBLT);
+		SelectObject(dcTarget, oldBmp);
+		DeleteDC(dcTarget);
+		ReleaseDC(0, dcScreen);
+
+		auto bmp = HBMITMAP_to_BMP(bmpTarget);
+		DeleteObject(bmpTarget);
+		return bmp;
 	}
 #endif
 }

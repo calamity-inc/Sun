@@ -2,7 +2,7 @@
 
 #include "Exception.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
 	void Capture::validate() const
 	{
@@ -12,7 +12,7 @@ namespace soup
 		if (reinterpret_cast<uintptr_t>(data) == 0xdddddddd)
 #endif
 		{
-			throw Exception("Attempt to use Capture after it has been free'd");
+			SOUP_THROW(Exception("Attempt to use Capture after it has been free'd"));
 		}
 	}
 }

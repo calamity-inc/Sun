@@ -4,7 +4,7 @@
 
 #include "Capture.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
 	template <typename CaptureArgT, typename Ret, typename...Args>
 	struct CallbackBase
@@ -111,6 +111,85 @@ namespace soup
 		Ret operator() (Args&&...args)
 		{
 			return Base::fp(std::forward<Args>(args)..., std::move(Base::cap));
+		}
+	};
+
+	template <typename Ret, typename...Args>
+	struct Callback<Ret(Args...) noexcept>
+	{
+		using FuncT = Ret(Args...) noexcept;
+		using FuncWithCaptureT = Ret(Args..., Capture&&) noexcept;
+
+		FuncWithCaptureT* fp;
+		Capture cap;
+
+		Callback() noexcept
+			: fp(nullptr)
+		{
+		}
+
+		Callback(const Callback&) = delete;
+
+		Callback(Callback&& b) noexcept
+			: fp(b.fp), cap(std::move(b.cap))
+		{
+		}
+
+		Callback(FuncT* fp) noexcept
+			: fp(reinterpret_cast<FuncWithCaptureT*>(fp))
+		{
+		}
+
+		Callback(FuncWithCaptureT* fp) noexcept
+			: fp(fp)
+		{
+		}
+
+		Callback(FuncWithCaptureT* fp, Capture&& cap) noexcept
+			: fp(fp), cap(std::move(cap))
+		{
+		}
+
+		void set(FuncWithCaptureT* fp, Capture&& cap = {}) noexcept
+		{
+			this->fp = fp;
+			this->cap = std::move(cap);
+		}
+
+		void operator=(FuncWithCaptureT* fp) noexcept
+		{
+			this->fp = fp;
+			this->cap.reset();
+		}
+
+		void operator=(Callback&& b) noexcept
+		{
+			fp = b.fp;
+			cap = std::move(b.cap);
+		}
+
+		void operator=(const Callback& b) noexcept = delete;
+
+		void operator=(FuncT* fp) noexcept
+		{
+			this->fp = reinterpret_cast<FuncWithCaptureT*>(fp);
+			this->cap.reset();
+		}
+
+		[[nodiscard]] constexpr operator bool() const noexcept
+		{
+			return fp != nullptr;
+		}
+
+		void reset()
+		{
+			fp = nullptr;
+			cap.reset();
+		}
+
+		Ret operator() (Args&&...args)
+		{
+			return fp(std::forward<Args>(args)..., std::move(cap));
 		}
 	};
 

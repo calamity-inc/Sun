@@ -59,6 +59,9 @@
     <ClCompile Include="vendor\Soup\soup\crc32.cpp">
       <Filter>vendor\Soup</Filter>
     </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\filesystem.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="vendor">
@@ -223,6 +226,12 @@
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\crc32.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\filesystem.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\type.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
   </ItemGroup>

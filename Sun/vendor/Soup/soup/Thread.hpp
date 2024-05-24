@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.hpp"
+#if !SOUP_WASM
 
 #if SOUP_WINDOWS
 #include <Windows.h>
@@ -13,8 +14,9 @@
 #include "Capture.hpp"
 #include "UniquePtr.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
+	// This class itself is not thread-safe. If you need multiple threads to access the same instance, use a mutex.
 	class Thread
 	{
 	public:
@@ -37,14 +39,15 @@ namespace soup
 
 		~Thread() noexcept;
 
-#if SOUP_WINDOWS || (SOUP_POSIX && !SOUP_MACOS)
+#if SOUP_WINDOWS || SOUP_LINUX
 		void setTimeCritical() noexcept;
 #endif
 
 		[[nodiscard]] bool isRunning() const noexcept { return running; }
-		void stop() noexcept;
 
 		void awaitCompletion() noexcept;
 		static void awaitCompletion(const std::vector<UniquePtr<Thread>>& threads) noexcept;
 	};
 }
+
+#endif

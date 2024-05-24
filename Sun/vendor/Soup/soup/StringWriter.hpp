@@ -2,14 +2,14 @@
 
 #include "Writer.hpp"
 
-namespace soup
+NAMESPACE_SOUP
 {
 	class StringWriter final : public Writer
 	{
 	public:
 		std::string data{};
 
-		StringWriter(Endian endian = LITTLE_ENDIAN)
+		StringWriter(Endian endian = ENDIAN_LITTLE)
 			: Writer(endian)
 		{
 		}
@@ -21,9 +21,21 @@ namespace soup
 
 		~StringWriter() final = default;
 
-		void write(const char* data, size_t size) final
+		bool raw(void* data, size_t size) noexcept final
 		{
-			this->data.append(data, size);
+#if SOUP_EXCEPTIONS
+			try
+#endif
+			{
+				this->data.append(reinterpret_cast<char*>(data), size);
+			}
+#if SOUP_EXCEPTIONS
+			catch (...)
+			{
+				return false;
+			}
+#endif
+			return true;
 		}
 	};
 }

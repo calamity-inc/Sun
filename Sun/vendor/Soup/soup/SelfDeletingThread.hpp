@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Thread.hpp"
+#if !SOUP_WASM
 
-namespace soup
+NAMESPACE_SOUP
 {
 	class SelfDeletingThread : public Thread
 	{
 	public:
-		explicit SelfDeletingThread(void(*f)(Capture&&), Capture&& cap = {}) noexcept;
+		explicit SelfDeletingThread(void(*f)(Capture&&), Capture&& cap = {});
 
 	protected:
 		static void run(Capture&& cap);
@@ -16,3 +17,5 @@ namespace soup
 		Capture cap;
 	};
 }
+
+#endif

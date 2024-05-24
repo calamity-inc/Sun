@@ -13,7 +13,7 @@
 #include "unicode.hpp"
 #endif
 
-namespace soup
+NAMESPACE_SOUP
 {
 	static std::unordered_map<Window::handle_t, Window::Config> window_configs{};
 
@@ -432,16 +432,18 @@ namespace soup
 	}
 
 #if SOUP_WINDOWS
+	// WS_EX_TRANSPARENT disables clicking on the window, even with visible pixels. May want to adjust this depending on mouse informer.
+
 	Window& Window::setInvisibleColour(Rgb rgb) noexcept
 	{
-		SetWindowLong(h, GWL_EXSTYLE, GetWindowLong(h, GWL_EXSTYLE) | WS_EX_LAYERED);
+		SetWindowLong(h, GWL_EXSTYLE, GetWindowLong(h, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
 		SetLayeredWindowAttributes(h, RGB(rgb.r, rgb.g, rgb.b), 0, LWA_COLORKEY);
 		return *this;
 	}
 
 	Window& Window::setTransparency(int a) noexcept
 	{
-		SetWindowLong(h, GWL_EXSTYLE, GetWindowLong(h, GWL_EXSTYLE) | WS_EX_LAYERED);
+		SetWindowLong(h, GWL_EXSTYLE, GetWindowLong(h, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
 		SetLayeredWindowAttributes(h, 0, a, LWA_ALPHA);
 		return *this;
 	}
