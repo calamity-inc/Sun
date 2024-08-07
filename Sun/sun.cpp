@@ -207,6 +207,10 @@ struct Project
 				{
 					val = SOUP_X86;
 				}
+				else if (condition == "arm")
+				{
+					val = SOUP_ARM;
+				}
 				else if (condition == "true")
 				{
 					val = true;
