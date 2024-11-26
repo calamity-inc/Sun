@@ -6,7 +6,7 @@ jobs:
   debian-10:
     runs-on: [debian-10]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build Soup
         run: php Sun/vendor/Soup/build_lib.php
@@ -15,7 +15,7 @@ jobs:
         run: clang -o suncli Sun/sun.cpp -ISun/vendor/Soup libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
 
       - name: Upload Sun
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "Debian 10 and above"
           path: suncli
@@ -23,7 +23,7 @@ jobs:
   macos-13:
     runs-on: macos-13
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build Soup
         run: php Sun/vendor/Soup/build_lib.php
@@ -32,7 +32,7 @@ jobs:
         run: clang -o suncli Sun/sun.cpp -ISun/vendor/Soup libsoup.a -std=c++17 -lstdc++
 
       - name: Upload Sun
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "MacOS (X86)"
           path: suncli
@@ -40,7 +40,7 @@ jobs:
   windows-latest:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build Soup
         run: php Sun/vendor/Soup/build_lib.php
@@ -49,7 +49,7 @@ jobs:
         run: clang -o Sun.exe Sun/sun.cpp -ISun/vendor/Soup libsoup.a -std=c++17
 
       - name: Upload Sun
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Windows
           path: Sun.exe
