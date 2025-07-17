@@ -66,6 +66,10 @@ You can pass arbitrary arguments to the compiler with the `arg` keyword.
 
 Linker-specific arguments can be provided with the `linker_arg` keyword.
 
+## RTTI
+
+By default, Sun adds `-fno-rtti` to the compiler arguments. To have it omitted, add a line that reads `rtti` to your .sun file.
+
 ## 32-bit targets
 
 You can add a line that reads `32bit` to the .sun file to add `-m32` to the compilation of your project and its dependencies.

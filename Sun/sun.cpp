@@ -45,6 +45,7 @@ struct Project
 	bool opt_static = false;
 	bool opt_dynamic = false;
 	bool opt_32bit = false;
+	bool opt_rtti = false;
 	std::vector<std::string> extra_args{};
 	std::vector<std::string> extra_linker_args{};
 
@@ -258,6 +259,12 @@ struct Project
 				continue;
 			}
 
+			if (line == "rtti")
+			{
+				opt_rtti = true;
+				continue;
+			}
+
 			if (line.substr(0, 9) == "compiler ")
 			{
 				prog = line.substr(9);
@@ -303,6 +310,10 @@ struct Project
 		{
 			hash = soup::joaat::concat(hash, prog);
 		}
+		if (opt_rtti)
+		{
+			hash = soup::joaat::concat(hash, "rtti");
+		}
 		for (const auto& extra_arg : extra_args)
 		{
 			hash = soup::joaat::concat(hash, extra_arg);
@@ -344,6 +355,7 @@ struct Project
 			compiler.lang = "c++";
 			compiler.lang.append(cpp_version);
 		}
+		compiler.rtti = opt_rtti;
 		compiler.extra_args = extra_args;
 		if (opt_32bit)
 		{
