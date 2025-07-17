@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <mutex>
+#include <stack>
 #include <thread>
 
 #include <soup/AtomicStack.hpp>
@@ -61,8 +62,7 @@ struct Project
 		}
 
 		std::ifstream in(sunfile);
-		bool ifblk_active = false;
-		bool ifblk_true;
+		std::stack<bool> ifblks;
 		for (std::string line; std::getline(in, line); )
 		{
 			SOUP_IF_UNLIKELY (line.empty())
@@ -86,18 +86,73 @@ struct Project
 				}
 			}
 
-			if (line == "endif")
+			if (line.substr(0, 3) == "if ")
 			{
-				if (!ifblk_active)
+				auto condition = line.substr(3);
+				soup::string::lower(condition);
+				bool invert = false;
+				if (condition.substr(0, 4) == "not ")
 				{
-					std::cout << "endif called while if-block is not active\n";
+					invert = true;
+					condition = condition.substr(4);
 				}
-				ifblk_active = false;
+				bool val = false;
+				if (condition == "windows")
+				{
+					val = SOUP_WINDOWS;
+				}
+				else if (condition == "macos")
+				{
+					val = SOUP_MACOS;
+				}
+				else if (condition == "linux")
+				{
+					val = SOUP_LINUX;
+				}
+				else if (condition == "x86")
+				{
+					val = SOUP_X86;
+				}
+				else if (condition == "arm")
+				{
+					val = SOUP_ARM;
+				}
+				else if (condition == "true")
+				{
+					val = true;
+				}
+				else if (condition == "false")
+				{
+					val = false;
+				}
+				else
+				{
+					std::cout << "Treating unknown condition \"" << condition << "\" as false\n";
+				}
+				val ^= invert;
+				if (!ifblks.empty())
+				{
+					val &= ifblks.top();
+				}
+				ifblks.emplace(val);
 				continue;
 			}
 
-			if (ifblk_active
-				&& !ifblk_true
+			if (line == "endif")
+			{
+				if (ifblks.empty())
+				{
+					std::cout << "endif called while if-block is not active\n";
+				}
+				else
+				{
+					ifblks.pop();
+				}
+				continue;
+			}
+
+			if (!ifblks.empty()
+				&& ifblks.top() == false
 				)
 			{
 				continue;
@@ -177,54 +232,6 @@ struct Project
 			if (line.substr(0, 11) == "linker_arg ")
 			{
 				extra_linker_args.emplace_back(line.substr(11));
-				continue;
-			}
-
-			if (line.substr(0, 3) == "if ")
-			{
-				auto condition = line.substr(3);
-				soup::string::lower(condition);
-				bool invert = false;
-				if (condition.substr(0, 4) == "not ")
-				{
-					invert = true;
-					condition = condition.substr(4);
-				}
-				bool val = false;
-				if (condition == "windows")
-				{
-					val = SOUP_WINDOWS;
-				}
-				else if (condition == "macos")
-				{
-					val = SOUP_MACOS;
-				}
-				else if (condition == "linux")
-				{
-					val = SOUP_LINUX;
-				}
-				else if (condition == "x86")
-				{
-					val = SOUP_X86;
-				}
-				else if (condition == "arm")
-				{
-					val = SOUP_ARM;
-				}
-				else if (condition == "true")
-				{
-					val = true;
-				}
-				else if (condition == "false")
-				{
-					val = false;
-				}
-				else
-				{
-					std::cout << "Treating unknown condition \"" << condition << "\" as false\n";
-				}
-				ifblk_active = true;
-				ifblk_true = (val ^ invert);
 				continue;
 			}
 
