@@ -44,6 +44,7 @@ struct Project
 	soup::AtomicStack<std::filesystem::path> cpps{};
 	bool opt_static = false;
 	bool opt_dynamic = false;
+	bool opt_32bit = false;
 	std::vector<std::string> extra_args{};
 	std::vector<std::string> extra_linker_args{};
 
@@ -251,6 +252,12 @@ struct Project
 				continue;
 			}
 
+			if (line == "32bit")
+			{
+				opt_32bit = true;
+				continue;
+			}
+
 			if (line.substr(0, 9) == "compiler ")
 			{
 				prog = line.substr(9);
@@ -300,6 +307,10 @@ struct Project
 		{
 			hash = soup::joaat::concat(hash, extra_arg);
 		}
+		if (opt_32bit)
+		{
+			hash = soup::joaat::concat(hash, "-m32");
+		}
 		return soup::string::hex(hash);
 	}
 
@@ -334,6 +345,10 @@ struct Project
 			compiler.lang.append(cpp_version);
 		}
 		compiler.extra_args = extra_args;
+		if (opt_32bit)
+		{
+			compiler.extra_args.emplace_back("-m32");
+		}
 		compiler.extra_linker_args = extra_linker_args;
 		return compiler;
 	}
@@ -367,6 +382,9 @@ struct Project
 					std::cout << "Dependency does not specify 'static' or 'dynamic'.\n";
 					exit(E_BADDEPEND);
 				}
+
+				dep_proj.opt_32bit = opt_32bit;
+
 				if (dep_proj.opt_static && opt_static) // Static library depending on a static library?
 				{
 					// Compile dependency and add it to our linking pile

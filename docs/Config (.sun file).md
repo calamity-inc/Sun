@@ -66,6 +66,10 @@ You can pass arbitrary arguments to the compiler with the `arg` keyword.
 
 Linker-specific arguments can be provided with the `linker_arg` keyword.
 
+## 32-bit targets
+
+You can add a line that reads `32bit` to the .sun file to add `-m32` to the compilation of your project and its dependencies.
+
 ## Conditionals
 
 Sun supports basic conditionals with the following syntax:
