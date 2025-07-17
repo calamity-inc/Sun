@@ -370,6 +370,7 @@ struct Project
 		Project* proj;
 		const soup::Compiler* compiler;
 		std::filesystem::path base_path;
+		std::filesystem::file_time_type last_header_modification;
 		std::mutex output_mutex;
 		soup::AtomicStack<std::string> objects;
 	};
@@ -466,6 +467,26 @@ struct Project
 			std::filesystem::create_directory(data.base_path);
 		}
 
+		for (const auto& f : std::filesystem::directory_iterator(dir))
+		{
+			if (f.is_regular_file())
+			{
+				const auto name = soup::string::fixType(f.path().filename().u8string());
+#if SOUP_CPP20
+				if (name.ends_with(".hpp") || name.ends_with(".h"))
+#else
+				if (name.substr(0, 4) == ".hpp" || name.substr(0, 2) == ".h")
+#endif
+				{
+					const auto t = std::filesystem::last_write_time(f);
+					if (data.last_header_modification < t)
+					{
+						data.last_header_modification = t;
+					}
+				}
+			}
+		}
+
 		size_t threads_to_spin_up = (std::thread::hardware_concurrency() - 1);
 		if (threads_to_spin_up < 1)
 		{
@@ -498,11 +519,16 @@ struct Project
 					std::string o = soup::string::fixType(op.u8string());
 					o.append(".o");
 
-					std::error_code ec;
-					if (!std::filesystem::exists(o)
-						|| std::filesystem::last_write_time(cpp, ec) > std::filesystem::last_write_time(o, ec)
-						|| ec
-						)
+					bool need_compile = !std::filesystem::exists(o);
+					if (!need_compile)
+					{
+						std::error_code ec;
+						const auto last_compile = std::filesystem::last_write_time(o, ec);
+						need_compile = data.last_header_modification > last_compile
+							|| std::filesystem::last_write_time(cpp, ec) > last_compile
+							|| ec;
+					}
+					if (need_compile)
 					{
 						data.output_mutex.lock();
 						std::cout << name << "\n";
