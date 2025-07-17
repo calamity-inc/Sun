@@ -5,18 +5,21 @@
 #include <fstream>
 
 #if SOUP_WINDOWS
-#pragma comment(lib, "Gdi32.lib")
+	#pragma comment(lib, "gdi32.lib")
+	#pragma comment(lib, "winmm.lib") // timeBeginPeriod, timeEndPeriod
 
-#include <Psapi.h>
+	#include <psapi.h>
+	#include <timeapi.h> // timeBeginPeriod, timeEndPeriod
 
-#include "Exception.hpp"
-#include "ObfusString.hpp"
+	#include "Exception.hpp"
+	#include "ObfusString.hpp"
 #else
-#include <sys/mman.h>
-#include <unistd.h> // getpid
+	#include <unistd.h> // getpid, usleep
+	#if _POSIX_C_SOURCE >= 199309L
+		#include <time.h> // nanosleep
+	#endif
 #endif
 
-#include "AllocRaiiVirtual.hpp"
 #include "filesystem.hpp"
 #include "rand.hpp"
 #include "string.hpp"
@@ -124,56 +127,43 @@ NAMESPACE_SOUP
 		return result;
 	}
 
-	UniquePtr<AllocRaiiVirtual> os::allocateExecutable(const std::string& bytecode)
-	{
-		auto alloc = soup::make_unique<AllocRaiiVirtual>(bytecode.size());
-		memcpy(alloc->addr, bytecode.data(), bytecode.size());
-		return alloc;
-	}
-
-	UniquePtr<AllocRaiiVirtual> os::allocateExecutable(const std::vector<uint8_t>& bytecode)
-	{
-		auto alloc = soup::make_unique<AllocRaiiVirtual>(bytecode.size());
-		memcpy(alloc->addr, bytecode.data(), bytecode.size());
-		return alloc;
-	}
-
-	void* os::virtualAlloc(size_t len, int prot)
-	{
-#if SOUP_WINDOWS
-		return VirtualAlloc(nullptr, len, MEM_COMMIT | MEM_RESERVE, memProtFlagsToProtect(prot));
-#else
-		return mmap(nullptr, len, prot, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-#endif
-	}
-
-	void os::virtualFree(void* addr, size_t len)
-	{
-#if SOUP_WINDOWS
-		VirtualFree(addr, len, MEM_DECOMMIT);
-#else
-		munmap(addr, len);
-#endif
-	}
-
-	void os::changeProtection(void* addr, size_t len, int prot)
-	{
-#if SOUP_WINDOWS
-		DWORD oldprotect;
-		VirtualProtect(addr, len, memProtFlagsToProtect(prot), &oldprotect);
-#else
-		mprotect(addr, len, prot);
-#endif
-	}
-
+#if !SOUP_WINDOWS
 	pid_t os::getProcessId() noexcept
 	{
-#if SOUP_WINDOWS
-		return GetCurrentProcessId();
-#else
 		return ::getpid();
-#endif
 	}
+#endif
+
+#if !SOUP_WINDOWS
+	void os::sleep(unsigned int ms) noexcept
+	{
+	#if _POSIX_C_SOURCE >= 199309L
+		struct timespec ts;
+		ts.tv_sec = ms / 1000;
+		ts.tv_nsec = (ms % 1000) * 1000000;
+		int res;
+		do
+		{
+			res = ::nanosleep(&ts, &ts);
+		} while (res && errno == EINTR);
+	#else
+		if (ms >= 1000)
+		{
+			::sleep(ms / 1000);
+		}
+		::usleep((ms % 1000) * 1000);
+	#endif
+	}
+#endif
+
+#if SOUP_WINDOWS
+	void os::fastSleep(unsigned int ms) noexcept
+	{
+		timeBeginPeriod(ms);
+		::Sleep(ms);
+		timeEndPeriod(ms);
+	}
+#endif
 
 #if SOUP_WINDOWS
 	static bool copy_to_clipboard_utf16(const std::wstring& text)
@@ -204,12 +194,39 @@ NAMESPACE_SOUP
 		return copy_to_clipboard_utf16(unicode::utf8_to_utf16(text));
 	}
 
+	std::string os::getClipboardTextUtf8()
+	{
+		return unicode::utf16_to_utf8(getClipboardTextUtf16());
+	}
+
+	UTF16_STRING_TYPE os::getClipboardTextUtf16()
+	{
+		std::wstring text;
+		if (OpenClipboard(nullptr))
+		{
+			HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+			if (hData != nullptr)
+			{
+				auto pszText = static_cast<wchar_t*>(GlobalLock(hData));
+				if (pszText != nullptr)
+				{
+					text = pszText;
+					GlobalUnlock(hData);
+				}
+			}
+			CloseClipboard();
+		}
+		return text;
+	}
+
+	#if !SOUP_CROSS_COMPILE
 	size_t os::getMemoryUsage()
 	{
 		PROCESS_MEMORY_COUNTERS_EX pmc;
 		GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
 		return pmc.PrivateUsage;
 	}
+	#endif
 
 	bool os::isWine()
 	{
@@ -231,6 +248,7 @@ NAMESPACE_SOUP
 		return ProcessInformation.PebBaseAddress;
 	}
 
+	#if !SOUP_CROSS_COMPILE
 	[[nodiscard]] static std::string HBMITMAP_to_BMP(HBITMAP hBitmap)
 	{
 		HDC hDC;
@@ -323,5 +341,6 @@ NAMESPACE_SOUP
 		DeleteObject(bmpTarget);
 		return bmp;
 	}
+	#endif
 #endif
 }

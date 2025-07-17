@@ -7,6 +7,55 @@
 
 NAMESPACE_SOUP
 {
+	std::string string::hex2bin(const char* data, size_t size) SOUP_EXCAL
+	{
+		std::string bin;
+		uint8_t val = 0;
+		bool first_nibble = true;
+		for (; size; ++data, --size)
+		{
+			const auto& c = *data;
+			if (isNumberChar(c))
+			{
+				val |= (c - '0');
+			}
+			else if (c >= 'a' && c <= 'f')
+			{
+				val |= 0xA + (c - 'a');
+			}
+			else if (c >= 'A' && c <= 'F')
+			{
+				val |= 0xA + (c - 'A');
+			}
+			else
+			{
+				continue;
+			}
+			if (first_nibble)
+			{
+				val <<= 4;
+				first_nibble = false;
+			}
+			else
+			{
+				bin.push_back(val);
+				val = 0;
+				first_nibble = true;
+			}
+		}
+		return bin;
+	}
+
+	void string::replaceAll(std::string& str, char from, char to) SOUP_EXCAL
+	{
+		size_t pos = 0;
+		while ((pos = str.find(from, pos)) != std::string::npos)
+		{
+			str.data()[pos] = to;
+			pos += 1;
+		}
+	}
+
 	std::string string::escape(const std::string& str)
 	{
 		std::string res;
@@ -54,7 +103,7 @@ NAMESPACE_SOUP
 		return res;
 	}
 
-	void string::listAppend(std::string& str, std::string&& add)
+	void string::listAppend(std::string& str, std::string add)
 	{
 		if (str.empty())
 		{
@@ -106,6 +155,7 @@ NAMESPACE_SOUP
 		std::string ret;
 		if (std::filesystem::exists(file))
 		{
+#if SOUP_WINDOWS // kinda messes with hwHid on Linux, also unsure if memory mapping is faster than direct file access on Linux.
 			size_t len;
 			if (auto addr = soup::filesystem::createFileMapping(file, len))
 			{
@@ -113,6 +163,7 @@ NAMESPACE_SOUP
 				soup::filesystem::destroyFileMapping(addr, len);
 			}
 			else // File might be open in another process, causing memory mapping to fail.
+#endif
 			{
 				std::ifstream t(file, std::ios::binary);
 

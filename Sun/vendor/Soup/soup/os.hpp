@@ -8,8 +8,8 @@
 #include <vector>
 
 #if SOUP_WINDOWS
-#include <Windows.h>
-#include <Winternl.h>
+#include <windows.h>
+#include <winternl.h>
 #endif
 
 NAMESPACE_SOUP
@@ -28,24 +28,27 @@ NAMESPACE_SOUP
 		static std::string executeInner(std::string program, const std::vector<std::string>& args);
 	public:
 
-		[[nodiscard]] static UniquePtr<AllocRaiiVirtual> allocateExecutable(const std::string& bytecode);
-		[[nodiscard]] static UniquePtr<AllocRaiiVirtual> allocateExecutable(const std::vector<uint8_t>& bytecode);
-		[[nodiscard]] static void* virtualAlloc(size_t len, int prot);
-		static void virtualFree(void* addr, size_t len);
-		static void changeProtection(void* addr, size_t len, int prot);
-
 		[[nodiscard]] static pid_t getProcessId() noexcept;
+
+		static void sleep(unsigned int ms) noexcept;
+		static void fastSleep(unsigned int ms) noexcept; // On Windows, this tries to be more accurate for ms < 15.
 
 #if SOUP_WINDOWS
 		static bool copyToClipboard(const std::string& text);
+		[[nodiscard]] static std::string getClipboardTextUtf8();
+		[[nodiscard]] static std::wstring getClipboardTextUtf16();
 
+	#if !SOUP_CROSS_COMPILE
 		[[nodiscard]] static size_t getMemoryUsage();
+	#endif
 
 		[[nodiscard]] static bool isWine();
 
 		[[nodiscard]] static PEB* getCurrentPeb();
 
+	#if !SOUP_CROSS_COMPILE
 		[[nodiscard]] static std::string makeScreenshotBmp(int x, int y, int width, int height);
+	#endif
 
 		[[nodiscard]] static int getPrimaryScreenWidth()
 		{
@@ -58,4 +61,21 @@ NAMESPACE_SOUP
 		}
 #endif
 	};
+
+#if SOUP_WINDOWS
+	inline pid_t os::getProcessId() noexcept
+	{
+		return GetCurrentProcessId();
+	}
+
+	inline void os::sleep(unsigned int ms) noexcept
+	{
+		::Sleep(ms);
+	}
+#else
+	inline void os::fastSleep(unsigned int ms) noexcept
+	{
+		os::sleep(ms);
+	}
+#endif
 }

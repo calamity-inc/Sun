@@ -29,37 +29,22 @@
     <ClCompile Include="vendor\Soup\soup\Thread.cpp">
       <Filter>vendor\Soup</Filter>
     </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\Key.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\Window.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
     <ClCompile Include="vendor\Soup\soup\base.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\RenderTarget.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\Canvas.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\RasterFont.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\TinyPngOut.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\Rgb.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\adler32.cpp">
       <Filter>vendor\Soup</Filter>
     </ClCompile>
     <ClCompile Include="vendor\Soup\soup\crc32.cpp">
       <Filter>vendor\Soup</Filter>
     </ClCompile>
     <ClCompile Include="vendor\Soup\soup\filesystem.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\CpuInfo.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\rand.cpp">
+      <Filter>vendor\Soup</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\Soup\soup\HardwareRng.cpp">
       <Filter>vendor\Soup</Filter>
     </ClCompile>
   </ItemGroup>
@@ -114,9 +99,6 @@
     <ClInclude Include="vendor\Soup\soup\Capture.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\Key.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\Soup\soup\deleter.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
@@ -150,12 +132,6 @@
     <ClInclude Include="vendor\Soup\soup\AllocRaiiLocalBase.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\memProtFlags.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\Rgb.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\Soup\soup\Exception.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
@@ -171,18 +147,6 @@
     <ClInclude Include="vendor\Soup\soup\SelfDeletingThread.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\Ps2Scancode.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\Window.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\RenderTarget.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\RenderTargetWindow.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\Soup\soup\math.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
@@ -190,12 +154,6 @@
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\VectorBase.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\Canvas.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\RasterFont.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\console.hpp">
@@ -219,12 +177,6 @@
     <ClInclude Include="vendor\Soup\soup\Writer.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\TinyPngOut.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\adler32.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\Soup\soup\crc32.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
@@ -232,6 +184,33 @@
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\type.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\crc32_intrin.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\CpuInfo.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\TransientToken.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\bitutil.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\ShortString.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\SharedPtr.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\memory.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\HardwareRng.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\RngInterface.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
   </ItemGroup>

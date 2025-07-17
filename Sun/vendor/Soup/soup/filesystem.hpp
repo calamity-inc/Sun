@@ -4,9 +4,6 @@
 #include <string>
 
 #include "base.hpp"
-#if SOUP_WINDOWS
-#include <Windows.h>
-#endif
 
 NAMESPACE_SOUP
 {
@@ -18,17 +15,9 @@ NAMESPACE_SOUP
 		[[nodiscard]] static intptr_t filesize(const std::filesystem::path& path); // returns -1 on error
 
 		[[nodiscard]] static std::filesystem::path tempfile(const std::string& ext = {});
-		[[nodiscard]] static std::filesystem::path getProgramData() noexcept;
+		[[nodiscard]] static std::filesystem::path getProgramData() SOUP_EXCAL;
 
-
-		[[nodiscard]] static void* createFileMapping(const std::filesystem::path& path, size_t& out_len);
-#if SOUP_WINDOWS
-		static void destroyFileMapping(void* addr, size_t len)
-		{
-			UnmapViewOfFile(addr);
-		}
-#else
-		static void destroyFileMapping(void* addr, size_t len);
-#endif
+		[[nodiscard]] static const void* createFileMapping(const std::filesystem::path& path, size_t& out_len) noexcept;
+		static void destroyFileMapping(const void* addr, size_t len) noexcept;
 	};
 }

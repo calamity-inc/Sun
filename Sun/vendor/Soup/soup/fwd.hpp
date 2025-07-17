@@ -32,7 +32,6 @@ NAMESPACE_SOUP
 	struct Asn1Sequence;
 
 	// data.container
-	class Buffer;
 	struct StructMap;
 
 	// data.json
@@ -42,6 +41,7 @@ NAMESPACE_SOUP
 	struct JsonInt;
 	struct JsonObject;
 	struct JsonString;
+	struct JsonTreeWriter;
 
 	// data.reflection
 	class drData;
@@ -128,7 +128,7 @@ NAMESPACE_SOUP
 	template <typename T> class UniquePtr;
 	template <class T> class WeakRef;
 
-	// mem.alloc
+	// mem.allocraii
 	struct AllocRaiiLocalBase;
 	struct AllocRaiiRemote;
 	struct AllocRaiiVirtual;
@@ -171,14 +171,11 @@ NAMESPACE_SOUP
 	struct WebSocketMessage;
 
 	// os
-	enum ControlInput : uint8_t;
+	struct HandleRaii;
 	class Module;
 	enum MouseButton : uint8_t;
 	class Thread;
 	struct Window;
-
-	// os.windows
-	struct HandleRaii;
 
 	// task
 	class Capture;
@@ -191,6 +188,7 @@ NAMESPACE_SOUP
 	class Mixed;
 
 	// vis
+	struct BCanvas;
 	class Canvas;
 	struct FormattedText;
 	class QrCode;

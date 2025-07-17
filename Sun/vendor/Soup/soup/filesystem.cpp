@@ -3,10 +3,11 @@
 #include <fstream>
 
 #if SOUP_WINDOWS
-#include <ShlObj.h> // CSIDL_COMMON_APPDATA
+#include <windows.h>
+#include <shlobj.h> // CSIDL_COMMON_APPDATA
 
-#pragma comment(lib, "Shell32.lib") // SHGetFolderPathW
-#pragma comment(lib, "User32.lib") // SendInput
+#pragma comment(lib, "shell32.lib") // SHGetFolderPathW
+#pragma comment(lib, "user32.lib") // SendInput
 #else
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -66,7 +67,7 @@ NAMESPACE_SOUP
 		return path;
 	}
 
-	std::filesystem::path filesystem::getProgramData() noexcept
+	std::filesystem::path filesystem::getProgramData() SOUP_EXCAL
 	{
 #if SOUP_WINDOWS
 		wchar_t szPath[MAX_PATH];
@@ -80,9 +81,11 @@ NAMESPACE_SOUP
 #endif
 	}
 
-	void* filesystem::createFileMapping(const std::filesystem::path& path, size_t& out_len)
+	static const char empty_file_data = 0;
+
+	const void* filesystem::createFileMapping(const std::filesystem::path& path, size_t& out_len) noexcept
 	{
-		void* addr = nullptr;
+		const void* addr = nullptr;
 #if SOUP_WINDOWS
 		HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 		SOUP_IF_LIKELY (f != INVALID_HANDLE_VALUE)
@@ -91,11 +94,18 @@ NAMESPACE_SOUP
 			SOUP_IF_LIKELY (GetFileSizeEx(f, &liSize))
 			{
 				out_len = static_cast<size_t>(liSize.QuadPart);
-				HANDLE m = CreateFileMappingA(f, nullptr, PAGE_READONLY, liSize.HighPart, liSize.LowPart, NULL);
-				SOUP_IF_LIKELY (m != NULL)
+				if (out_len == 0)
 				{
-					addr = MapViewOfFile(m, FILE_MAP_READ, 0, 0, out_len);
-					CloseHandle(m);
+					addr = &empty_file_data;
+				}
+				else
+				{
+					HANDLE m = CreateFileMappingA(f, nullptr, PAGE_READONLY, liSize.HighPart, liSize.LowPart, NULL);
+					SOUP_IF_LIKELY (m != NULL)
+					{
+						addr = MapViewOfFile(m, FILE_MAP_READ, 0, 0, out_len);
+						CloseHandle(m);
+					}
 				}
 			}
 			CloseHandle(f);
@@ -108,7 +118,18 @@ NAMESPACE_SOUP
 			SOUP_IF_LIKELY (fstat(f, &st) != -1)
 			{
 				out_len = st.st_size;
-				addr = mmap(nullptr, st.st_size, PROT_READ, MAP_SHARED, f, 0);
+				if (out_len == 0)
+				{
+					addr = &empty_file_data;
+				}
+				else
+				{
+					addr = mmap(nullptr, st.st_size, PROT_READ, MAP_SHARED, f, 0);
+					SOUP_IF_UNLIKELY (addr == MAP_FAILED)
+					{
+						addr = nullptr;
+					}
+				}
 			}
 			::close(f);
 		}
@@ -116,10 +137,15 @@ NAMESPACE_SOUP
 		return addr;
 	}
 
-#if !SOUP_WINDOWS
-	void filesystem::destroyFileMapping(void* addr, size_t len)
+	void filesystem::destroyFileMapping(const void* addr, size_t len) noexcept
 	{
-		munmap(addr, len);
-	}
+		if (addr != &empty_file_data)
+		{
+#if SOUP_WINDOWS
+			UnmapViewOfFile(addr);
+#else
+			munmap(const_cast<void*>(addr), len);
 #endif
+		}
+	}
 }

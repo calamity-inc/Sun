@@ -10,7 +10,7 @@
 #include <iostream>
 
 #if SOUP_WINDOWS
-#include <Windows.h>
+#include <windows.h>
 #else
 #include <termios.h>
 #endif
@@ -23,6 +23,16 @@
 
 NAMESPACE_SOUP
 {
+	enum ControlInput : uint8_t
+	{
+		UP,
+		DOWN,
+		LEFT,
+		RIGHT,
+		NEW_LINE,
+		BACKSPACE,
+	};
+
 	class console_impl
 	{
 	private:

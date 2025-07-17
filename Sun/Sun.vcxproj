@@ -94,7 +94,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>vendor\Soup\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -114,7 +114,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>vendor\Soup\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -134,7 +134,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>vendor\Soup\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -154,7 +154,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>vendor\Soup\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -172,81 +172,67 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="sun.cpp" />
-    <ClCompile Include="vendor\Soup\soup\adler32.cpp" />
     <ClCompile Include="vendor\Soup\soup\base.cpp" />
-    <ClCompile Include="vendor\Soup\soup\Canvas.cpp" />
     <ClCompile Include="vendor\Soup\soup\Capture.cpp" />
     <ClCompile Include="vendor\Soup\soup\Compiler.cpp" />
-    <ClCompile Include="vendor\Soup\soup\crc32.cpp" />
+    <ClCompile Include="vendor\Soup\soup\CpuInfo.cpp" />
     <ClCompile Include="vendor\Soup\soup\filesystem.cpp" />
+    <ClCompile Include="vendor\Soup\soup\HardwareRng.cpp" />
     <ClCompile Include="vendor\Soup\soup\joaat.cpp" />
-    <ClCompile Include="vendor\Soup\soup\Key.cpp" />
     <ClCompile Include="vendor\Soup\soup\main.cpp" />
     <ClCompile Include="vendor\Soup\soup\os.cpp" />
-    <ClCompile Include="vendor\Soup\soup\RasterFont.cpp" />
-    <ClCompile Include="vendor\Soup\soup\RenderTarget.cpp" />
-    <ClCompile Include="vendor\Soup\soup\Rgb.cpp" />
+    <ClCompile Include="vendor\Soup\soup\rand.cpp" />
     <ClCompile Include="vendor\Soup\soup\string.cpp" />
     <ClCompile Include="vendor\Soup\soup\StringMatch.cpp" />
     <ClCompile Include="vendor\Soup\soup\Thread.cpp" />
-    <ClCompile Include="vendor\Soup\soup\TinyPngOut.cpp" />
     <ClCompile Include="vendor\Soup\soup\unicode.cpp" />
-    <ClCompile Include="vendor\Soup\soup\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vendor\Soup\soup\adler32.hpp" />
-    <ClInclude Include="vendor\Soup\soup\AllocRaiiLocalBase.hpp" />
-    <ClInclude Include="vendor\Soup\soup\AllocRaiiVirtual.hpp" />
     <ClInclude Include="vendor\Soup\soup\AtomicStack.hpp" />
     <ClInclude Include="vendor\Soup\soup\base.hpp" />
+    <ClInclude Include="vendor\Soup\soup\bitutil.hpp" />
     <ClInclude Include="vendor\Soup\soup\Callback.hpp" />
-    <ClInclude Include="vendor\Soup\soup\Canvas.hpp" />
     <ClInclude Include="vendor\Soup\soup\Capture.hpp" />
     <ClInclude Include="vendor\Soup\soup\Compiler.hpp" />
     <ClInclude Include="vendor\Soup\soup\console.hpp" />
-    <ClInclude Include="vendor\Soup\soup\crc32.hpp" />
+    <ClInclude Include="vendor\Soup\soup\CpuInfo.hpp" />
     <ClInclude Include="vendor\Soup\soup\deleter.hpp" />
     <ClInclude Include="vendor\Soup\soup\Endian.hpp" />
     <ClInclude Include="vendor\Soup\soup\Exception.hpp" />
     <ClInclude Include="vendor\Soup\soup\filesystem.hpp" />
     <ClInclude Include="vendor\Soup\soup\format.hpp" />
     <ClInclude Include="vendor\Soup\soup\fwd.hpp" />
+    <ClInclude Include="vendor\Soup\soup\HardwareRng.hpp" />
     <ClInclude Include="vendor\Soup\soup\IntStruct.hpp" />
     <ClInclude Include="vendor\Soup\soup\ioBase.hpp" />
     <ClInclude Include="vendor\Soup\soup\ioSeekableReader.hpp" />
     <ClInclude Include="vendor\Soup\soup\joaat.hpp" />
-    <ClInclude Include="vendor\Soup\soup\Key.hpp" />
     <ClInclude Include="vendor\Soup\soup\LcgRng.hpp" />
     <ClInclude Include="vendor\Soup\soup\macros.hpp" />
     <ClInclude Include="vendor\Soup\soup\main.hpp" />
     <ClInclude Include="vendor\Soup\soup\math.hpp" />
-    <ClInclude Include="vendor\Soup\soup\memProtFlags.hpp" />
+    <ClInclude Include="vendor\Soup\soup\memory.hpp" />
     <ClInclude Include="vendor\Soup\soup\ObfusString.hpp" />
     <ClInclude Include="vendor\Soup\soup\Optional.hpp" />
     <ClInclude Include="vendor\Soup\soup\os.hpp" />
     <ClInclude Include="vendor\Soup\soup\PoppedNode.hpp" />
-    <ClInclude Include="vendor\Soup\soup\Ps2Scancode.hpp" />
     <ClInclude Include="vendor\Soup\soup\rand.hpp" />
-    <ClInclude Include="vendor\Soup\soup\RasterFont.hpp" />
     <ClInclude Include="vendor\Soup\soup\Reader.hpp" />
-    <ClInclude Include="vendor\Soup\soup\RenderTarget.hpp" />
-    <ClInclude Include="vendor\Soup\soup\RenderTargetWindow.hpp" />
-    <ClInclude Include="vendor\Soup\soup\Rgb.hpp" />
+    <ClInclude Include="vendor\Soup\soup\RngInterface.hpp" />
     <ClInclude Include="vendor\Soup\soup\SelfDeletingThread.hpp" />
+    <ClInclude Include="vendor\Soup\soup\SharedPtr.hpp" />
+    <ClInclude Include="vendor\Soup\soup\ShortString.hpp" />
     <ClInclude Include="vendor\Soup\soup\string.hpp" />
     <ClInclude Include="vendor\Soup\soup\StringBuilder.hpp" />
     <ClInclude Include="vendor\Soup\soup\StringLiteral.hpp" />
     <ClInclude Include="vendor\Soup\soup\StringMatch.hpp" />
     <ClInclude Include="vendor\Soup\soup\StringWriter.hpp" />
     <ClInclude Include="vendor\Soup\soup\Thread.hpp" />
-    <ClInclude Include="vendor\Soup\soup\TinyPngOut.hpp" />
+    <ClInclude Include="vendor\Soup\soup\TransientToken.hpp" />
     <ClInclude Include="vendor\Soup\soup\type.hpp" />
     <ClInclude Include="vendor\Soup\soup\type_traits.hpp" />
     <ClInclude Include="vendor\Soup\soup\unicode.hpp" />
     <ClInclude Include="vendor\Soup\soup\UniquePtr.hpp" />
-    <ClInclude Include="vendor\Soup\soup\Vector2.hpp" />
-    <ClInclude Include="vendor\Soup\soup\VectorBase.hpp" />
-    <ClInclude Include="vendor\Soup\soup\Window.hpp" />
     <ClInclude Include="vendor\Soup\soup\Writer.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
