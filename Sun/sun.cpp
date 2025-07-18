@@ -654,8 +654,8 @@ int entry(std::vector<std::string>&& args, bool console)
 	size_t i = 1;
 
 	SOUP_IF_UNLIKELY (args.size() > i
-		&& (args.at(i) == "help"
-			|| args.at(i) == "-?"
+		&& (args[i] == "help"
+			|| args[i] == "-?"
 			)
 		)
 	{
@@ -663,7 +663,7 @@ int entry(std::vector<std::string>&& args, bool console)
 		if (args.size() > ++i)
 		{
 			// sun help ...
-			if (args.at(i) == "create")
+			if (args[i] == "create")
 			{
 				// sun help create
 				std::cout << "\n";
@@ -675,7 +675,7 @@ int entry(std::vector<std::string>&& args, bool console)
 			}
 			else
 			{
-				std::cout << "Unknown help topic \"" << args.at(i) << "\". Use 'sun help' for help overview.\n";
+				std::cout << "Unknown help topic \"" << args[i] << "\". Use 'sun help' for help overview.\n";
 				return E_BADARG;
 			}
 		}
@@ -692,19 +692,19 @@ int entry(std::vector<std::string>&& args, bool console)
 
 	std::string projname{};
 	if (args.size() > i
-		&& args.at(i) != "create"
-		&& args.at(i) != "set"
-		&& args.at(i) != "run"
+		&& args[i] != "create"
+		&& args[i] != "set"
+		&& args[i] != "run"
 		)
 	{
 		projname = args.at(i++);
 	}
 
 	SOUP_IF_UNLIKELY (args.size() > i
-		&& args.at(i) != "run"
+		&& args[i] != "run"
 		)
 	{
-		if (args.at(i) == "create")
+		if (args[i] == "create")
 		{
 			// sun [proj] create
 
@@ -720,13 +720,13 @@ int entry(std::vector<std::string>&& args, bool console)
 			of << "+*.cpp\n";
 
 			if (args.size() > ++i
-				&& (args.at(i) == "static"
-					|| args.at(i) == "dynamic"
-					|| args.at(i) == "shared"
+				&& (args[i] == "static"
+					|| args[i] == "dynamic"
+					|| args[i] == "shared"
 					)
 				)
 			{
-				of << args.at(i) << "\n";
+				of << args[i] << "\n";
 			}
 
 			std::cout << "Done.\n";
@@ -735,7 +735,7 @@ int entry(std::vector<std::string>&& args, bool console)
 		else
 		{
 			// sun [proj] ...
-			std::cout << "Unknown project command \"" << args.at(i) << "\". Use 'sun help' for help.\n";
+			std::cout << "Unknown project command \"" << args[i] << "\". Use 'sun help' for help.\n";
 			return E_BADARG;
 		}
 	}
@@ -774,7 +774,7 @@ int entry(std::vector<std::string>&& args, bool console)
 			}
 
 			if (args.size() > i
-				&& args.at(i) == "run"
+				&& args[i] == "run"
 				)
 			{
 				std::cout << ">>> Running...\n";
