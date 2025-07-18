@@ -56,7 +56,7 @@ struct Project
 		sunfile /= name;
 	}
 
-	bool load()
+	bool load(std::string/*&&*/ extralines[] = nullptr, size_t extralines_size = 0)
 	{
 		SOUP_IF_UNLIKELY (!std::filesystem::exists(sunfile))
 		{
@@ -65,7 +65,9 @@ struct Project
 
 		std::ifstream in(sunfile);
 		std::stack<bool> ifblks;
-		for (std::string line; std::getline(in, line); )
+		size_t extralines_i = 0;
+		for (std::string line; std::getline(in, line)
+			|| (extralines_i != extralines_size && (line = std::move(extralines[extralines_i++]), true)); )
 		{
 			SOUP_IF_UNLIKELY (line.empty())
 			{
@@ -683,8 +685,8 @@ int entry(std::vector<std::string>&& args, bool console)
 		{
 			std::cout << "\n";
 			std::cout << "  sun [proj] create ...        Create project ('sun help create')\n";
-			std::cout << "  sun [proj]                   Build project\n";
-			std::cout << "  sun [proj] run ...           Build & run project\n";
+			std::cout << "  sun [proj] {+opt}            Build project\n";
+			std::cout << "  sun [proj] {+opt} run ...    Build & run project\n";
 			std::cout << "\n";
 			return E_OK;
 		}
@@ -692,12 +694,22 @@ int entry(std::vector<std::string>&& args, bool console)
 
 	std::string projname{};
 	if (args.size() > i
+		&& args[i].c_str()[0] != '+'
 		&& args[i] != "create"
 		&& args[i] != "set"
 		&& args[i] != "run"
 		)
 	{
 		projname = args.at(i++);
+	}
+
+	std::vector<std::string> extralines;
+	while (args.size() > i
+		&& args[i].c_str()[0] == '+'
+		)
+	{
+		extralines.emplace_back(args[i].substr(1));
+		++i;
 	}
 
 	SOUP_IF_UNLIKELY (args.size() > i
@@ -746,7 +758,7 @@ int entry(std::vector<std::string>&& args, bool console)
 		{
 			Project proj(std::filesystem::current_path(), projname);
 
-			SOUP_IF_UNLIKELY (!proj.load())
+			SOUP_IF_UNLIKELY (!proj.load(extralines.data(), extralines.size()))
 			{
 				auto projfile = projname;
 				projfile.append(".sun");
