@@ -1,7 +1,3 @@
-if true
-if true
 name Sun
 +*.cpp
 require vendor/Soup/soup include_dir=vendor/Soup
-endif
-endif
