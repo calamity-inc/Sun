@@ -4,4 +4,6 @@ bin/
 *.lib
 *.o
 *.nupkg
-libsoup.a
+*.a
+# executable on linux
+Sun/Sun
