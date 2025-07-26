@@ -27,6 +27,15 @@
 	return name.substr(0, name.length() - ext.length());
 }
 
+[[nodiscard]] static std::time_t file_time_to_unix_time(std::filesystem::file_time_type ft)
+{
+	return std::chrono::duration_cast<std::chrono::seconds>(
+		std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+			ft - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now()
+		).time_since_epoch()
+	).count();
+}
+
 struct Dependency
 {
 	std::filesystem::path dir;
@@ -372,7 +381,7 @@ struct Project
 		Project* proj;
 		const soup::Compiler* compiler;
 		std::filesystem::path base_path;
-		std::filesystem::file_time_type last_header_modification;
+		std::time_t last_header_modification;
 		std::mutex output_mutex;
 		soup::AtomicStack<std::string> objects;
 	};
@@ -469,6 +478,7 @@ struct Project
 			std::filesystem::create_directory(data.base_path);
 		}
 
+		data.last_header_modification = 0;
 		for (const auto& f : std::filesystem::directory_iterator(dir))
 		{
 			if (f.is_regular_file())
@@ -480,7 +490,7 @@ struct Project
 				if (name.substr(0, 4) == ".hpp" || name.substr(0, 2) == ".h")
 #endif
 				{
-					const auto t = std::filesystem::last_write_time(f);
+					const auto t = file_time_to_unix_time(std::filesystem::last_write_time(f));
 					if (data.last_header_modification < t)
 					{
 						data.last_header_modification = t;
@@ -526,14 +536,15 @@ struct Project
 					{
 						std::error_code ec;
 						const auto last_compile = std::filesystem::last_write_time(o, ec);
-						need_compile = data.last_header_modification > last_compile
+						need_compile = data.last_header_modification > file_time_to_unix_time(last_compile)
 							|| std::filesystem::last_write_time(cpp, ec) > last_compile
 							|| ec;
 					}
 					if (need_compile)
 					{
 						data.output_mutex.lock();
-						std::cout << name << "\n";
+						//std::error_code ec;
+						std::cout << name /*<< " (" << file_time_to_unix_time(std::filesystem::last_write_time(cpp, ec)) << ")"*/ << "\n";
 						data.output_mutex.unlock();
 
 						std::string msg;
