@@ -168,11 +168,13 @@ NAMESPACE_SOUP
 				std::ifstream t(file, std::ios::binary);
 
 				t.seekg(0, std::ios::end);
-				const auto s = static_cast<size_t>(t.tellg());
-				t.seekg(0, std::ios::beg);
+				if (const auto s = static_cast<size_t>(t.tellg()); s != -1)
+				{
+					t.seekg(0, std::ios::beg);
 
-				ret.reserve(s);
-				ret.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+					ret.reserve(s);
+					ret.assign((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+				}
 			}
 		}
 		return ret;
@@ -188,9 +190,9 @@ NAMESPACE_SOUP
 		return toFile(soup::filesystem::u8path(file), contents);
 	}
 
-	void string::toFile(const std::filesystem::path& file, const std::string& contents)
+	void string::toFile(const std::filesystem::path& file, const char* data, size_t size)
 	{
 		std::ofstream of(file, std::ios_base::binary);
-		of << contents;
+		of.write(data, size);
 	}
 }
