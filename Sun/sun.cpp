@@ -54,9 +54,9 @@ struct Project
 	soup::AtomicStack<std::filesystem::path> cpps{};
 	bool opt_static = false;
 	bool opt_dynamic = false;
-	bool opt_32bit = false;
 	bool opt_rtti = false;
 	std::vector<std::string> extra_args{};
+	std::vector<std::string> global_args{};
 	std::vector<std::string> extra_linker_args{};
 
 	Project(std::filesystem::path dir, std::string name = {})
@@ -265,6 +265,12 @@ struct Project
 				continue;
 			}
 
+			if (line.substr(0, 11) == "global_arg ")
+			{
+				global_args.emplace_back(line.substr(11));
+				continue;
+			}
+
 			if (line.substr(0, 11) == "linker_arg ")
 			{
 				extra_linker_args.emplace_back(line.substr(11));
@@ -289,7 +295,7 @@ struct Project
 
 			if (line == "32bit")
 			{
-				opt_32bit = true;
+				global_args.emplace_back("-m32");
 				continue;
 			}
 
@@ -352,9 +358,9 @@ struct Project
 		{
 			hash = soup::joaat::concat(hash, extra_arg);
 		}
-		if (opt_32bit)
+		for (const auto& arg : global_args)
 		{
-			hash = soup::joaat::concat(hash, "-m32");
+			hash = soup::joaat::concat(hash, arg);
 		}
 		return soup::string::hex(hash);
 	}
@@ -416,10 +422,7 @@ struct Project
 		}
 		compiler.rtti = opt_rtti;
 		compiler.extra_args = extra_args;
-		if (opt_32bit)
-		{
-			compiler.extra_args.emplace_back("-m32");
-		}
+		compiler.extra_args.insert(compiler.extra_args.end(), global_args.begin(), global_args.end());
 		compiler.extra_linker_args = extra_linker_args;
 		return compiler;
 	}
@@ -455,7 +458,7 @@ struct Project
 					exit(E_BADDEPEND);
 				}
 
-				dep_proj.opt_32bit = opt_32bit;
+				dep_proj.global_args.insert(dep_proj.global_args.end(), global_args.begin(), global_args.end());
 
 				if (dep_proj.opt_static && opt_static) // Static library depending on a static library?
 				{

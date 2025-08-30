@@ -78,6 +78,7 @@ cpp 20
 ## Compiler arguments
 
 You can pass arbitrary arguments to the compiler with the `arg` keyword.
+`global_arg` works the same but also applies to all dependencies.
 
 You can define preprocessor macros with the `define` keyword. For example:
 
@@ -96,7 +97,7 @@ By default, Sun adds `-fno-rtti` to the compiler arguments. To have it omitted, 
 
 ## 32-bit targets
 
-You can add a line that reads `32bit` to the .sun file to add `-m32` to the compilation of your project and its dependencies.
+You can add a line that reads `32bit` to the .sun file to add `-m32` to the global compiler arguments of your project and its dependencies (equivalent to `global_arg -m32`).
 
 ## Conditionals
 
