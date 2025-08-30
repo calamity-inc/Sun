@@ -51,10 +51,13 @@ Add a line that says `dynamic` to the .sun file to indicate that the project is 
 ## Dependencies
 
 Add `require REL_PATH` to the .sun file to add a dependency to your project.
+If the dependency's project file does not have the default name of `.sun`,
+you can specify it with `require DIR:NAME` to load `DIR/NAME.sun`.
 
 Then, when you run Sun, it will build your dependencies first, and finally build your project with relevant compiler and linker include flags.
 
-If the include directory differs from source directory, you can use `require REL_PATH include_dir=REL_PATH`.
+If the include directory differs from source directory, you can use
+`require REL_PATH[:NAME] include_dir=REL_PATH`.
 
 ## Project name
 
