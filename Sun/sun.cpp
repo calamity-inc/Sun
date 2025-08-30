@@ -99,6 +99,11 @@ struct Project
 				}
 			}
 
+			if (line.at(0) == '#')
+			{
+				continue;
+			}
+
 			if (line.substr(0, 3) == "if ")
 			{
 				auto condition = line.substr(3);
