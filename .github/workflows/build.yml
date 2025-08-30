@@ -1,6 +1,8 @@
+---
 name: Build
 
-on: push
+'on':
+  push:
 
 jobs:
   debian-10:
@@ -12,7 +14,10 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
+        run: |
+          clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup \
+            Sun/vendor/Soup/libsoup.a -std=c++17 -fuse-ld=lld \
+            -lstdc++ -lstdc++fs -pthreads
 
       - name: Upload Sun
         uses: actions/upload-artifact@v4
@@ -29,7 +34,9 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -lstdc++
+        run: |
+          clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup \
+            Sun/vendor/Soup/libsoup.a -std=c++17 -lstdc++
 
       - name: Upload Sun
         uses: actions/upload-artifact@v4
@@ -38,8 +45,9 @@ jobs:
           path: suncli
 
   macos-14-arm64:
-    runs-on: macos-14
-    architecture: arm64
+    runs-on:
+      os: macos-14
+      architecture: arm64
     steps:
       - uses: actions/checkout@v4
 
@@ -47,7 +55,9 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -O3 -arch arm64 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -lstdc++
+        run: |
+          clang -O3 -arch arm64 -o suncli Sun/sun.cpp -ISun/vendor/Soup \
+            Sun/vendor/Soup/libsoup.a -std=c++17 -lstdc++
 
       - name: Upload Sun
         uses: actions/upload-artifact@v4
@@ -64,7 +74,9 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -O3 -o Sun.exe Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/soup.lib -std=c++17
+        run: |
+          clang -O3 -o Sun.exe Sun/sun.cpp -ISun/vendor/Soup \
+            Sun/vendor/Soup/soup.lib -std=c++17
 
       - name: Upload Sun
         uses: actions/upload-artifact@v4
