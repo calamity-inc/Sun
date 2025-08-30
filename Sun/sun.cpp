@@ -744,8 +744,31 @@ int entry(std::vector<std::string>&& args, bool console)
 		&& args[i].c_str()[0] == '+'
 		)
 	{
-		extralines.emplace_back(args[i].substr(1));
-		++i;
+		if (args[i].size() > 1 && args[i][1] == '"')
+		{
+			std::string line = args[i].substr(2);
+			while (true)
+			{
+				if (!line.empty() && line.back() == '"')
+				{
+					line.pop_back();
+					break;
+				}
+				if (args.size() <= ++i)
+				{
+					break;
+				}
+				line.push_back(' ');
+				line.append(args[i]);
+			}
+			extralines.emplace_back(std::move(line));
+			++i;
+		}
+		else
+		{
+			extralines.emplace_back(args[i].substr(1));
+			++i;
+		}
 	}
 
 	SOUP_IF_UNLIKELY (args.size() > i

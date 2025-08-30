@@ -114,4 +114,4 @@ compiler em++
 
 As you may have noticed, the .sun file is parsed line-by-line. You can add additional lines via the CLI using `+`, for example `sun +32bit` loads the file `.sun` and acts as if a line in that file reads `32bit`.
 
-Note that if the added line contains a space, the argument needs to be quoted like so: `sun "+name myproject"`
+Note that if the added line contains a space, the argument needs to be quoted, either like `sun +"name myproject"` or `sun "+name myproject"`.
