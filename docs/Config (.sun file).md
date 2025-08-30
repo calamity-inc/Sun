@@ -21,6 +21,12 @@ or individual files:
 +utils.cpp
 ```
 
+The wildcard operator will recurse subdirectories when the path also contains a forward slash (`/`). Otherwise, you can explicitly add `-R` to enable recursion, e.g. to have Sun search recursively for cpp files:
+
+```
++*.cpp -R
+```
+
 ## Remove source files
 
 You can remove previously-added source files by using the `-` operator.
@@ -31,6 +37,8 @@ For example, if you want to compile all .cpp files except for wasm.cpp:
 +*.cpp
 -wasm.cpp
 ```
+
+This operator handles wildcards and recursion exactly like the `+` operator.
 
 ## Compile as static library
 

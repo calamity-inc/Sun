@@ -338,9 +338,34 @@ struct Project
 
 	void matchFiles(std::string&& query, soup::AtomicStack<std::filesystem::path>& cpps, void(*callback)(soup::AtomicStack<std::filesystem::path>&, std::filesystem::path)) const
 	{
+		bool recursive = (query.find('/') != std::string::npos);
+		if (query.size() > 3 && query.substr(query.size() - 3) == " -R")
+		{
+			recursive = true;
+			query.erase(query.size() - 3, 3);
+		}
+
 		if (query.find('*') == std::string::npos)
 		{
 			callback(cpps, dir / query);
+		}
+		else if (recursive)
+		{
+			for (const auto& f : std::filesystem::recursive_directory_iterator(dir))
+			{
+				if (f.is_regular_file())
+				{
+					auto path = soup::string::fixType(std::filesystem::relative(f.path(), dir).u8string());
+#if SOUP_WINDOWS
+					soup::string::replaceAll(path, '\\', '/');
+#endif
+					//std::cout << path << std::endl;
+					if (soup::StringMatch::wildcard(query, path, 1))
+					{
+						callback(cpps, f.path());
+					}
+				}
+			}
 		}
 		else
 		{
