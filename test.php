@@ -40,3 +40,8 @@ chdir("exe-lib");
 passthru($sun);
 assert_equal(shell_exec(toexe("exe-lib")), "Hello, world!\n");
 chdir("..");
+
+chdir("subdirs");
+passthru($sun);
+assert_equal(shell_exec(toexe("dont_do_this")), "Hello, world!\n");
+chdir("..");
