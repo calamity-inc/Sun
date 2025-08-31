@@ -17,7 +17,7 @@ jobs:
       - name: Upload Sun
         uses: actions/upload-artifact@v4
         with:
-          name: "Debian 10 and above"
+          name: "Debian 10 and above (X64)"
           path: suncli
 
   macos-13:
@@ -34,7 +34,7 @@ jobs:
       - name: Upload Sun
         uses: actions/upload-artifact@v4
         with:
-          name: "MacOS (X86_64)"
+          name: "MacOS (X64)"
           path: suncli
 
   macos-14:
@@ -73,5 +73,5 @@ jobs:
       - name: Upload Sun
         uses: actions/upload-artifact@v4
         with:
-          name: Windows
+          name: "Windows (X64)"
           path: Sun.exe
