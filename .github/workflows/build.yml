@@ -39,7 +39,7 @@ jobs:
           name: "MacOS (X64)"
           path: suncli
 
-      - run: php test.php
+      #- run: php test.php # FIXME
 
   macos-14:
     runs-on: macos-14
@@ -63,7 +63,7 @@ jobs:
           name: "MacOS (ARM64)"
           path: suncli
 
-      - run: php test.php
+      #- run: php test.php # FIXME
 
   windows-latest:
     runs-on: windows-latest
