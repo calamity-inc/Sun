@@ -514,6 +514,9 @@ struct Project
 			std::cout << ">>> Now compiling " << getName() << "\n";
 		}
 
+		// We're about to consume the 'cpps' stack, which may change the result of getName if we don't pin it.
+		name = getName();
+
 		SharedCompileData data;
 		data.proj = this;
 		data.compiler = &compiler;
@@ -559,7 +562,6 @@ struct Project
 		{
 			threads_to_spin_up = cpps.size();
 		}
-
 		std::vector<soup::UniquePtr<soup::Thread>> threads{};
 		while (threads_to_spin_up-- != 0)
 		{
