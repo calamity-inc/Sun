@@ -40,6 +40,7 @@ struct Dependency
 {
 	std::filesystem::path dir;
 	std::filesystem::path include_dir;
+	std::string name;
 };
 
 struct Project
@@ -214,14 +215,23 @@ struct Project
 				Dependency dep;
 				dep.dir = dir;
 				auto sep = line.find(" include_dir=");
+				std::string req = (sep == std::string::npos) ? line.substr(8) : line.substr(8, sep - 8);
+				auto colon = req.find(':');
+				if (colon == std::string::npos)
+				{
+					dep.dir /= req;
+				}
+				else
+				{
+					dep.dir /= req.substr(0, colon);
+					dep.name = req.substr(colon + 1);
+				}
 				if (sep == std::string::npos)
 				{
-					dep.dir /= line.substr(8);
 					dep.include_dir = dep.dir;
 				}
 				else
 				{
-					dep.dir /= line.substr(8, sep - 8);
 					dep.include_dir = dir;
 					dep.include_dir = line.substr(sep + 13);
 				}
@@ -431,7 +441,7 @@ struct Project
 		{
 			for (const auto& dep : dependencies)
 			{
-				Project dep_proj(dep.dir);
+				Project dep_proj(dep.dir, dep.name);
 				SOUP_IF_UNLIKELY (!dep_proj.load())
 				{
 					std::cout << "Failed to load dependency: " << dep.dir << "\n";
