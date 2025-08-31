@@ -645,7 +645,7 @@ struct Project
 		}
 		else if (opt_dynamic)
 		{
-#if SOUP_LINUX
+#if !SOUP_WINDOWS
 			if (!getCompiler().isCrossCompiler())
 			{
 				name.insert(0, "lib");
