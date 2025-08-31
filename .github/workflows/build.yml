@@ -20,6 +20,8 @@ jobs:
           name: "Debian 10 and above (X64)"
           path: suncli
 
+      - run: php test.php
+
   macos-13:
     runs-on: macos-13
     steps:
@@ -36,6 +38,8 @@ jobs:
         with:
           name: "MacOS (X64)"
           path: suncli
+
+      - run: php test.php
 
   macos-14:
     runs-on: macos-14
@@ -59,6 +63,8 @@ jobs:
           name: "MacOS (ARM64)"
           path: suncli
 
+      - run: php test.php
+
   windows-latest:
     runs-on: windows-latest
     steps:
@@ -75,3 +81,5 @@ jobs:
         with:
           name: "Windows (X64)"
           path: Sun.exe
+
+      - run: php test.php

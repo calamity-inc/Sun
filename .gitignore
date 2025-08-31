@@ -1,7 +1,9 @@
 .vs/
 bin/
+*.dll
 *.exe
 *.lib
+*.exp
 *.o
 *.nupkg
 *.a
