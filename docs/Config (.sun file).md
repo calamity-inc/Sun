@@ -76,6 +76,15 @@ cpp 20
 
 You can pass arbitrary arguments to the compiler with the `arg` keyword.
 
+You can define preprocessor macros with the `define` keyword. For example:
+
+```
+define FOO=BAR
+define ENABLE_FEATURE
+```
+
+These lines add `-DFOO=BAR` and `-DENABLE_FEATURE` to the compiler arguments.
+
 Linker-specific arguments can be provided with the `linker_arg` keyword.
 
 ## RTTI

@@ -241,6 +241,14 @@ struct Project
 				continue;
 			}
 
+			if (line.substr(0, 7) == "define ")
+			{
+				std::string arg_define = "-D";
+				arg_define.append(line.substr(7));
+				extra_args.emplace_back(std::move(arg_define));
+				continue;
+			}
+
 			if (line.substr(0, 4) == "arg ")
 			{
 				extra_args.emplace_back(line.substr(4));
