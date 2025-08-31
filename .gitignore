@@ -7,5 +7,10 @@ bin/
 *.o
 *.nupkg
 *.a
-# executable on linux
+*.so
+# Linux
+suncli
 Sun/Sun
+examples/dll/consumer
+examples/exe/exe
+examples/exe-lib/exe-lib
