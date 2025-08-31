@@ -163,27 +163,33 @@ NAMESPACE_SOUP
 			return ".js";
 		}
 #if SOUP_LINUX
-		if (!isCrossCompiler())
-		{
-			return ".so";
-		}
+                if (!isCrossCompiler())
+                {
+                        return ".so";
+                }
+#elif SOUP_MACOS
+                return ".dylib";
 #endif
-		return ".dll";
-	}
+                return ".dll";
+        }
 
-	std::string Compiler::makeDynamicLibrary(const std::string& in, const std::string& out) const
-	{
-		auto args = getArgs();
+        std::string Compiler::makeDynamicLibrary(const std::string& in, const std::string& out) const
+        {
+                auto args = getArgs();
 #if !SOUP_WINDOWS
 		args.emplace_back("-fPIC");
 		args.emplace_back("-fvisibility=hidden");
 #endif
-		args.emplace_back("--shared");
-		args.emplace_back("-o");
-		args.emplace_back(out);
-		args.emplace_back(in);
-		addLinkerArgs(args);
-		return os::executeLong(prog, std::move(args));
+#if SOUP_MACOS
+                args.emplace_back("-dynamiclib");
+#else
+                args.emplace_back("--shared");
+#endif
+                args.emplace_back("-o");
+                args.emplace_back(out);
+                args.emplace_back(in);
+                addLinkerArgs(args);
+                return os::executeLong(prog, std::move(args));
 	}
 
 	std::string Compiler::makeDynamicLibrary(const std::vector<std::string>& objects, const std::string& out) const

@@ -645,17 +645,17 @@ struct Project
 		}
 		else if (opt_dynamic)
 		{
-#if SOUP_LINUX
-			if (!getCompiler().isCrossCompiler())
-			{
-				name.insert(0, "lib");
-			}
+#if SOUP_LINUX || SOUP_MACOS
+                        if (!getCompiler().isCrossCompiler())
+                        {
+                                name.insert(0, "lib");
+                        }
 #endif
-			name.append(getCompiler().getDynamicLibraryExtension());
-		}
-		else
-		{
-			name.append(soup::Compiler::getExecutableExtension());
+                        name.append(getCompiler().getDynamicLibraryExtension());
+                }
+                else
+                {
+                        name.append(soup::Compiler::getExecutableExtension());
 		}
 		auto p = dir;
 		p /= name;
