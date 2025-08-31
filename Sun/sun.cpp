@@ -38,9 +38,9 @@
 
 struct Dependency
 {
-        std::filesystem::path dir;
-        std::filesystem::path include_dir;
-        std::string name;
+	std::filesystem::path dir;
+	std::filesystem::path include_dir;
+	std::string name;
 };
 
 struct Project
@@ -205,36 +205,36 @@ struct Project
 				continue;
 			}
 
-                        if (line.substr(0, 8) == "require ")
-                        {
-                                Dependency dep;
-                                dep.dir = dir;
-                                auto sep = line.find(" include_dir=");
-                                std::string req = (sep == std::string::npos) ? line.substr(8) : line.substr(8, sep - 8);
-                                auto colon = req.find(':');
-                                if (colon == std::string::npos)
-                                {
-                                        dep.dir /= req;
-                                }
-                                else
-                                {
-                                        dep.dir /= req.substr(0, colon);
-                                        dep.name = req.substr(colon + 1);
-                                }
-                                if (sep == std::string::npos)
-                                {
-                                        dep.include_dir = dep.dir;
-                                }
-                                else
-                                {
-                                        dep.include_dir = dir;
-                                        dep.include_dir = line.substr(sep + 13);
-                                }
-                                dep.dir = std::filesystem::absolute(dep.dir);
-                                dep.include_dir = std::filesystem::absolute(dep.include_dir);
-                                dependencies.emplace_back(std::move(dep));
-                                continue;
-                        }
+			if (line.substr(0, 8) == "require ")
+			{
+				Dependency dep;
+				dep.dir = dir;
+				auto sep = line.find(" include_dir=");
+				std::string req = (sep == std::string::npos) ? line.substr(8) : line.substr(8, sep - 8);
+				auto colon = req.find(':');
+				if (colon == std::string::npos)
+				{
+					dep.dir /= req;
+				}
+				else
+				{
+					dep.dir /= req.substr(0, colon);
+					dep.name = req.substr(colon + 1);
+				}
+				if (sep == std::string::npos)
+				{
+					dep.include_dir = dep.dir;
+				}
+				else
+				{
+					dep.include_dir = dir;
+					dep.include_dir = line.substr(sep + 13);
+				}
+				dep.dir = std::filesystem::absolute(dep.dir);
+				dep.include_dir = std::filesystem::absolute(dep.include_dir);
+				dependencies.emplace_back(std::move(dep));
+				continue;
+			}
 
 			if (line.substr(0, 4) == "c++ " || line.substr(0, 4) == "cpp ")
 			{
@@ -424,16 +424,16 @@ struct Project
 	[[nodiscard]] std::vector<std::string> compile(soup::Compiler& compiler)
 	{
 		std::vector<std::string> objects{};
-                if (!dependencies.empty())
-                {
-                        for (const auto& dep : dependencies)
-                        {
-                                Project dep_proj(dep.dir, dep.name);
-                                SOUP_IF_UNLIKELY (!dep_proj.load())
-                                {
-                                        std::cout << "Failed to load dependency: " << dep.dir << "\n";
-                                        exit(E_BADDEPEND);
-                                }
+		if (!dependencies.empty())
+		{
+			for (const auto& dep : dependencies)
+			{
+				Project dep_proj(dep.dir, dep.name);
+				SOUP_IF_UNLIKELY (!dep_proj.load())
+				{
+					std::cout << "Failed to load dependency: " << dep.dir << "\n";
+					exit(E_BADDEPEND);
+				}
 				auto dep_name = dep_proj.getName();
 				std::cout << ">>> Processing dependency: " << dep_name << "\n";
 				SOUP_IF_UNLIKELY (!dep_proj.opt_static && !dep_proj.opt_dynamic)
