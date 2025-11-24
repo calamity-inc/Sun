@@ -3,7 +3,9 @@
 #include <iostream>
 #include <mutex>
 #include <stack>
+#include <string>
 #include <thread>
+#include <unordered_map>
 
 #include <soup/AtomicStack.hpp>
 #include <soup/Compiler.hpp>
@@ -709,6 +711,35 @@ struct Project
 	}
 };
 
+#if SOUP_WINDOWS
+static std::unordered_map<std::string, std::string> get_vs_env_for_x86()
+{
+	std::unordered_map<std::string, std::string> env;
+	if (auto pipe = _popen(R"(""%VSINSTALLDIR%VC\Auxiliary\Build\vcvarsall.bat" x86 && set")", "r"))
+	{
+		char buf[4096];
+		while (fgets(buf, sizeof(buf), pipe))
+		{
+			std::string line(buf);
+			while (!line.empty() && (line.back() == '\n' || line.back() == '\r'))
+			{
+				line.pop_back();
+			}
+
+			auto pos = line.find('=');
+			if (pos != std::string::npos)
+			{
+				std::string key = line.substr(0, pos);
+				std::string val = line.substr(pos + 1);
+				env.emplace(std::move(key), std::move(val));
+			}
+		}
+		_pclose(pipe);
+	}
+	return env;
+}
+#endif
+
 int entry(std::vector<std::string>&& args, bool console)
 {
 #if false
@@ -865,6 +896,25 @@ int entry(std::vector<std::string>&& args, bool console)
 				}
 				return E_BADARG;
 			}
+
+#if SOUP_WINDOWS
+			if (std::find(proj.global_args.begin(), proj.global_args.end(), "-m32") != proj.global_args.end())
+			{
+				auto env = get_vs_env_for_x86();
+				if (auto e = env.find("LIB"); e != env.end())
+				{
+					SetEnvironmentVariableA(e->first.c_str(), e->second.c_str());
+				}
+				if (auto e = env.find("LIBPATH"); e != env.end())
+				{
+					SetEnvironmentVariableA(e->first.c_str(), e->second.c_str());
+				}
+				if (auto e = env.find("INCLUDE"); e != env.end())
+				{
+					SetEnvironmentVariableA(e->first.c_str(), e->second.c_str());
+				}
+			}
+#endif
 
 			const auto outname = proj.getName();
 			SOUP_IF_UNLIKELY (int ret = proj.compileAndLink(); ret != E_OK)
