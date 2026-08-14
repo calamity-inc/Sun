@@ -6,7 +6,7 @@ jobs:
   debian-10:
     runs-on: [debian-10]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build Soup
         run: php Sun/vendor/Soup/build_lib.php
@@ -15,17 +15,17 @@ jobs:
         run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
 
       - name: Upload Sun
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "Debian 10 and above (X64)"
           path: suncli
 
       - run: php test.php
 
-  macos-13:
-    runs-on: macos-13
+  macos-x64:
+    runs-on: macos-15-intel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build Soup
         run: php Sun/vendor/Soup/build_lib.php
@@ -34,17 +34,17 @@ jobs:
         run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -lc++
 
       - name: Upload Sun
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "MacOS (X64)"
           path: suncli
 
       - run: php test.php
 
-  macos-14:
+  macos-arm64:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -58,7 +58,7 @@ jobs:
         run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -lc++
 
       - name: Upload Sun
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "MacOS (ARM64)"
           path: suncli
@@ -68,7 +68,7 @@ jobs:
   windows-latest:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build Soup
         run: php Sun/vendor/Soup/build_lib.php
@@ -77,7 +77,7 @@ jobs:
         run: clang -O3 -o Sun.exe Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/soup.lib -std=c++17
 
       - name: Upload Sun
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "Windows (X64)"
           path: Sun.exe
