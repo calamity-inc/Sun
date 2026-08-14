@@ -90,6 +90,7 @@ define ENABLE_FEATURE
 These lines add `-DFOO=BAR` and `-DENABLE_FEATURE` to the compiler arguments.
 
 Linker-specific arguments can be provided with the `linker_arg` keyword.
+`global_linker_args` works the same but applies to all subsequent links (dependencies & depenents).
 
 ## RTTI
 

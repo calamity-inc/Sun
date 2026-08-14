@@ -46,6 +46,7 @@ struct Dependency
 };
 
 static std::vector<std::string> global_args{};
+static std::vector<std::string> global_linker_args{};
 
 struct Project
 {
@@ -280,6 +281,12 @@ struct Project
 				continue;
 			}
 
+			if (line.substr(0, 18) == "global_linker_arg ")
+			{
+				global_linker_args.emplace_back(line.substr(18));
+				continue;
+			}
+
 			if (line == "static")
 			{
 				opt_static = true;
@@ -427,6 +434,7 @@ struct Project
 		compiler.extra_args = extra_args;
 		compiler.extra_args.insert(compiler.extra_args.end(), global_args.begin(), global_args.end());
 		compiler.extra_linker_args = extra_linker_args;
+		compiler.extra_linker_args.insert(compiler.extra_linker_args.end(), global_linker_args.begin(), global_linker_args.end());
 		return compiler;
 	}
 
