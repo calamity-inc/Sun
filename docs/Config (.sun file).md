@@ -78,7 +78,7 @@ cpp 20
 ## Compiler arguments
 
 You can pass arbitrary arguments to the compiler with the `arg` keyword.
-`global_arg` works the same but also applies to all dependencies.
+`global_arg` works the same but applies to all subsequent compiles (dependencies & depenents).
 
 You can define preprocessor macros with the `define` keyword. For example:
 

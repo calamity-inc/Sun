@@ -45,6 +45,8 @@ struct Dependency
 	std::string name;
 };
 
+static std::vector<std::string> global_args{};
+
 struct Project
 {
 	std::filesystem::path dir;
@@ -58,7 +60,6 @@ struct Project
 	bool opt_dynamic = false;
 	bool opt_rtti = false;
 	std::vector<std::string> extra_args{};
-	std::vector<std::string> global_args{};
 	std::vector<std::string> extra_linker_args{};
 
 	Project(std::filesystem::path dir, std::string name = {})
@@ -356,9 +357,9 @@ struct Project
 		{
 			hash = soup::joaat::concat(hash, "rtti");
 		}
-		for (const auto& extra_arg : extra_args)
+		for (const auto& arg : extra_args)
 		{
-			hash = soup::joaat::concat(hash, extra_arg);
+			hash = soup::joaat::concat(hash, arg);
 		}
 		for (const auto& arg : global_args)
 		{
@@ -439,7 +440,7 @@ struct Project
 		soup::AtomicStack<std::string> objects;
 	};
 
-	[[nodiscard]] std::vector<std::string> compile(soup::Compiler& compiler)
+	[[nodiscard]] std::vector<std::string> compile()
 	{
 		std::vector<std::string> objects{};
 		if (!dependencies.empty())
@@ -460,15 +461,12 @@ struct Project
 					exit(E_BADDEPEND);
 				}
 
-				dep_proj.global_args.insert(dep_proj.global_args.end(), global_args.begin(), global_args.end());
-
 				if (dep_proj.opt_static && opt_static) // Static library depending on a static library?
 				{
 					// Compile dependency and add it to our linking pile
-					auto dep_compiler = dep_proj.getCompiler();
-					auto dep_objects = dep_proj.compile(dep_compiler);
+					auto dep_objects = dep_proj.compile();
 					objects.insert(objects.end(), dep_objects.begin(), dep_objects.end());
-					compiler.extra_linker_args.insert(compiler.extra_linker_args.end(), dep_proj.extra_linker_args.begin(), dep_proj.extra_linker_args.end());
+					extra_linker_args.insert(extra_linker_args.end(), dep_proj.extra_linker_args.begin(), dep_proj.extra_linker_args.end());
 				}
 				else
 				{
@@ -482,33 +480,33 @@ struct Project
 				{
 					std::string arg_include = "-I";
 					arg_include.append(soup::string::fixType(dep.include_dir.u8string()));
-					compiler.extra_args.emplace_back(std::move(arg_include));
+					extra_args.emplace_back(std::move(arg_include));
 				}
 				if (dep_proj.opt_static)
 				{
 					if (!opt_static)
 					{
 						// Tell linker to include the static library
-						compiler.extra_linker_args.emplace_back(soup::string::fixType(dep_proj.getOutFile().u8string()));
+						extra_linker_args.emplace_back(soup::string::fixType(dep_proj.getOutFile().u8string()));
 					}
 				}
 				else //if (dep_proj.opt_dynamic)
 				{
 #if SOUP_WINDOWS
 					// Tell linker to include the dynamic library
-					compiler.extra_linker_args.emplace_back(soup::string::fixType(dep_proj.getLibPath(dep_name).u8string()));
+					extra_linker_args.emplace_back(soup::string::fixType(dep_proj.getLibPath(dep_name).u8string()));
 #else
 					// Add dependency directory to linker search path
 					{
 						std::string arg_libpath = "-L";
 						arg_libpath.append(soup::string::fixType(dep.dir.u8string()));
-						compiler.extra_linker_args.emplace_back(std::move(arg_libpath));
+						extra_linker_args.emplace_back(std::move(arg_libpath));
 					}
 					// Give dependency name to linker
 					{
 						std::string arg_libpath = "-l";
 						arg_libpath.append(dep_name);
-						compiler.extra_linker_args.emplace_back(std::move(arg_libpath));
+						extra_linker_args.emplace_back(std::move(arg_libpath));
 					}
 #endif
 				}
@@ -518,6 +516,8 @@ struct Project
 
 		// We're about to consume the 'cpps' stack, which may change the result of getName if we don't pin it.
 		name = getName();
+
+		auto compiler = getCompiler();
 
 		SharedCompileData data;
 		data.proj = this;
@@ -676,10 +676,9 @@ struct Project
 
 	int compileAndLink()
 	{
+		auto objects = compile();
 		auto compiler = getCompiler();
 		auto outfile = getOutFile();
-
-		auto objects = compile(compiler);
 
 		std::cout << "Linking...\n";
 		//std::cout << "Linking " << objects.size() << " objects...\n";
@@ -898,7 +897,7 @@ int entry(std::vector<std::string>&& args, bool console)
 			}
 
 #if SOUP_WINDOWS
-			if (std::find(proj.global_args.begin(), proj.global_args.end(), "-m32") != proj.global_args.end())
+			if (std::find(global_args.begin(), global_args.end(), "-m32") != global_args.end())
 			{
 				auto env = get_vs_env_for_x86();
 				if (auto e = env.find("LIB"); e != env.end())
