@@ -6,10 +6,13 @@
 
 #if SOUP_WINDOWS
 	#pragma comment(lib, "gdi32.lib")
+	#pragma comment(lib, "user32.lib") // OpenClipboard, ..., GetDC, ReleaseDC
 	#pragma comment(lib, "winmm.lib") // timeBeginPeriod, timeEndPeriod
 
 	#include <psapi.h>
-	#include <timeapi.h> // timeBeginPeriod, timeEndPeriod
+	#if !SOUP_CROSS_COMPILE
+		#include <timeapi.h> // timeBeginPeriod, timeEndPeriod
+	#endif
 
 	#include "Exception.hpp"
 	#include "ObfusString.hpp"
@@ -44,6 +47,7 @@ NAMESPACE_SOUP
 		str.push_back('"');
 	}
 
+#if !SOUP_WASM
 	std::string os::execute(std::string program, const std::vector<std::string>& args)
 	{
 		resolveProgram(program);
@@ -126,8 +130,9 @@ NAMESPACE_SOUP
 #endif
 		return result;
 	}
+#endif
 
-#if !SOUP_WINDOWS
+#if !SOUP_WINDOWS && !SOUP_WASM
 	pid_t os::getProcessId() noexcept
 	{
 		return ::getpid();
@@ -159,9 +164,13 @@ NAMESPACE_SOUP
 #if SOUP_WINDOWS
 	void os::fastSleep(unsigned int ms) noexcept
 	{
+	#if !SOUP_CROSS_COMPILE
 		timeBeginPeriod(ms);
+	#endif
 		::Sleep(ms);
+	#if !SOUP_CROSS_COMPILE
 		timeEndPeriod(ms);
+	#endif
 	}
 #endif
 

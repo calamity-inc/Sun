@@ -32,9 +32,6 @@
     <ClCompile Include="vendor\Soup\soup\base.cpp">
       <Filter>vendor\Soup</Filter>
     </ClCompile>
-    <ClCompile Include="vendor\Soup\soup\crc32.cpp">
-      <Filter>vendor\Soup</Filter>
-    </ClCompile>
     <ClCompile Include="vendor\Soup\soup\filesystem.cpp">
       <Filter>vendor\Soup</Filter>
     </ClCompile>
@@ -126,12 +123,6 @@
     <ClInclude Include="vendor\Soup\soup\format.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\AllocRaiiVirtual.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\AllocRaiiLocalBase.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\Soup\soup\Exception.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
@@ -148,12 +139,6 @@
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\math.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\Vector2.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\VectorBase.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\console.hpp">
@@ -177,16 +162,10 @@
     <ClInclude Include="vendor\Soup\soup\Writer.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\crc32.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
     <ClInclude Include="vendor\Soup\soup\filesystem.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\type.hpp">
-      <Filter>vendor\Soup</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\Soup\soup\crc32_intrin.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\CpuInfo.hpp">
@@ -211,6 +190,9 @@
       <Filter>vendor\Soup</Filter>
     </ClInclude>
     <ClInclude Include="vendor\Soup\soup\RngInterface.hpp">
+      <Filter>vendor\Soup</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\Soup\soup\bit.hpp">
       <Filter>vendor\Soup</Filter>
     </ClInclude>
   </ItemGroup>

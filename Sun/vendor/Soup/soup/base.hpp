@@ -11,89 +11,7 @@
 
 #define NAMESPACE_SOUP namespace soup
 
-// === Platform/ABI macros
-
-#ifdef _WIN32
-	#define SOUP_WINDOWS true
-	#define SOUP_WASM false
-	#define SOUP_LINUX false
-	#define SOUP_POSIX false
-	#define SOUP_MACOS false
-	#define SOUP_ANDROID false
-
-	#define SOUP_EXPORT __declspec(dllexport)
-
-	#ifndef WIN32_LEAN_AND_MEAN
-		#define WIN32_LEAN_AND_MEAN
-	#endif
-
-	#ifdef __MINGW32__
-		#define SOUP_CROSS_COMPILE true
-		#if _WIN32_WINNT < 0x600
-			#undef _WIN32_WINNT
-			#define _WIN32_WINNT 0x600
-		#endif
-	#else
-		#define SOUP_CROSS_COMPILE false
-	#endif
-#else
-	#define SOUP_WINDOWS false
-	#define SOUP_POSIX true
-	#define SOUP_CROSS_COMPILE false
-
-	#ifdef __EMSCRIPTEN__
-		#define SOUP_WASM true
-		#define SOUP_LINUX false
-		#define SOUP_MACOS false
-
-		#include "emscripten.h"
-		#define SOUP_EXPORT EMSCRIPTEN_KEEPALIVE
-	#else
-		#define SOUP_WASM false
-
-		#if defined(__linux__) && !defined(__ANDROID__)
-			#define SOUP_LINUX true
-		#else
-			#define SOUP_LINUX false
-		#endif
-
-		#ifdef __ANDROID__
-			#define SOUP_ANDROID true
-		#else
-			#define SOUP_ANDROID false
-		#endif
-
-		#ifdef __APPLE__
-			#define SOUP_APPLE true
-		#else
-			#define SOUP_APPLE false
-		#endif
-
-		#if defined(__APPLE__) && defined(__MACH__)
-			#define SOUP_MACOS true
-		#else
-			#define SOUP_MACOS false
-		#endif
-
-		#define SOUP_EXPORT __attribute__ ((visibility ("default")))
-	#endif
-#endif
-
-#define SOUP_CEXPORT extern "C" SOUP_EXPORT
-
-#if defined(_MSC_VER) && !defined(__clang__)
-	#define SOUP_FORCEINLINE __forceinline
-	#define SOUP_NOINLINE __declspec(noinline)
-	#define SOUP_PURE __declspec(noalias)
-	#define SOUP_UNIQADDR __restrict
-#else
-	#define SOUP_FORCEINLINE __attribute__((always_inline)) inline
-	#define SOUP_NOINLINE __attribute__((noinline))
-	#define SOUP_PURE __attribute__((pure))
-	#define SOUP_UNIQADDR __restrict__
-#endif
-
-// === CPU macros
+// === Architecture macros
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__ppc64__) || defined(__aarch64__) || defined(_M_ARM64)
 	#define SOUP_BITS 64
@@ -116,6 +34,88 @@
 	#define SOUP_ARM false
 #endif
 
+#if defined(__wasm32__) || defined(__wasm64__)
+	#define SOUP_WASM true
+#else
+	#define SOUP_WASM false
+#endif
+
+// === Platform/ABI macros
+
+#ifdef _WIN32
+	#define SOUP_WINDOWS true
+	#define SOUP_POSIX false
+
+	#define SOUP_EXPORT __declspec(dllexport)
+
+	#ifndef WIN32_LEAN_AND_MEAN
+		#define WIN32_LEAN_AND_MEAN
+	#endif
+
+	#define SOUP_EMSCRIPTEN false
+
+	#ifdef __MINGW32__
+		#define SOUP_CROSS_COMPILE true
+		#if _WIN32_WINNT < 0x600
+			#undef _WIN32_WINNT
+			#define _WIN32_WINNT 0x600
+		#endif
+	#else
+		#define SOUP_CROSS_COMPILE false
+	#endif
+#else
+	#define SOUP_WINDOWS false
+	#define SOUP_POSIX true
+	#define SOUP_CROSS_COMPILE false
+
+	#ifdef __EMSCRIPTEN__
+		#define SOUP_EMSCRIPTEN true
+		#include "emscripten.h"
+		#define SOUP_EXPORT EMSCRIPTEN_KEEPALIVE
+	#else
+		#define SOUP_EMSCRIPTEN false
+		#define SOUP_EXPORT __attribute__ ((visibility ("default")))
+	#endif
+#endif
+
+#if defined(__linux__) && !defined(__ANDROID__)
+	#define SOUP_LINUX true
+#else
+	#define SOUP_LINUX false
+#endif
+
+#ifdef __ANDROID__
+	#define SOUP_ANDROID true
+#else
+	#define SOUP_ANDROID false
+#endif
+
+#ifdef __APPLE__
+	#define SOUP_APPLE true
+#else
+	#define SOUP_APPLE false
+#endif
+
+#if defined(__APPLE__) && defined(__MACH__)
+	#define SOUP_MACOS true
+#else
+	#define SOUP_MACOS false
+#endif
+
+#define SOUP_CEXPORT extern "C" SOUP_EXPORT
+
+#if defined(_MSC_VER) && !defined(__clang__)
+	#define SOUP_FORCEINLINE __forceinline
+	#define SOUP_NOINLINE __declspec(noinline)
+	#define SOUP_PURE __declspec(noalias)
+	#define SOUP_UNIQADDR __restrict
+#else
+	#define SOUP_FORCEINLINE __attribute__((always_inline)) inline
+	#define SOUP_NOINLINE __attribute__((noinline))
+	#define SOUP_PURE __attribute__((pure))
+	#define SOUP_UNIQADDR __restrict__
+#endif
+
 // === Determine if code inspector
 
 #ifdef __INTELLISENSE__
@@ -128,6 +128,9 @@
 
 #ifdef _MSVC_LANG
 	#define SOUP_CPP_VERSION _MSVC_LANG
+	#if SOUP_CPP_VERSION < 2020'00L && !defined(__clang__)
+		#error When building with MSVC, Soup requires C++ 20 or above.
+	#endif
 #else
 	#define SOUP_CPP_VERSION __cplusplus
 #endif
@@ -161,15 +164,15 @@
 #endif
 
 #if SOUP_CPP23
-	#define SOUP_ASSUME(...) [[assume(__VA_ARGS__)]];
-	#define SOUP_UNREACHABLE std::unreachable();
+	#define SOUP_ASSUME(...) [[assume(__VA_ARGS__)]]
+	#define SOUP_UNREACHABLE std::unreachable()
 #else
 	#if defined(_MSC_VER) && !defined(__clang__)
-		#define SOUP_ASSUME(...) __assume(__VA_ARGS__);
-		#define SOUP_UNREACHABLE SOUP_ASSUME(false);
+		#define SOUP_ASSUME(...) __assume(__VA_ARGS__)
+		#define SOUP_UNREACHABLE SOUP_ASSUME(false)
 	#else
-		#define SOUP_ASSUME(...) ;
-		#define SOUP_UNREACHABLE __builtin_unreachable();
+		#define SOUP_ASSUME(...)
+		#define SOUP_UNREACHABLE __builtin_unreachable()
 	#endif
 #endif
 
@@ -221,7 +224,7 @@ NAMESPACE_SOUP
 
 template <typename T> SOUP_FORCEINLINE void SOUP_UNUSED(T&&) {}
 
-#define SOUP_RETHROW_FALSE(x) SOUP_IF_UNLIKELY (!(x)) { return {}; }
+#define SOUP_RETHROW_FALSE(...) SOUP_IF_UNLIKELY (!(__VA_ARGS__)) { return {}; }
 
 // Enable compiler warning for unannotated fallthroughs
 #if defined(__clang__)

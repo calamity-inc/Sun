@@ -1,7 +1,8 @@
 #pragma once
 
-#include <algorithm> // swap
 #include <string>
+#include <string_view>
+#include <utility> // std::swap
 
 #include "base.hpp"
 #include "LcgRng.hpp"
@@ -130,9 +131,20 @@ NAMESPACE_SOUP
 			return m_data;
 		}
 
-		[[nodiscard]] operator const char* () noexcept
+		[[nodiscard]] operator const char*() noexcept
 		{
 			return c_str();
+		}
+
+		[[nodiscard]] std::string_view sv() SOUP_EXCAL
+		{
+			runtime_access();
+			return std::string_view(m_data, Len);
+		}
+
+		[[nodiscard]] operator std::string_view() SOUP_EXCAL
+		{
+			return sv();
 		}
 
 		[[nodiscard]] bool operator==(const std::string& b) noexcept

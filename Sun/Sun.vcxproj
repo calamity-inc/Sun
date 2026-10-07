@@ -190,6 +190,7 @@
   <ItemGroup>
     <ClInclude Include="vendor\Soup\soup\AtomicStack.hpp" />
     <ClInclude Include="vendor\Soup\soup\base.hpp" />
+    <ClInclude Include="vendor\Soup\soup\bit.hpp" />
     <ClInclude Include="vendor\Soup\soup\bitutil.hpp" />
     <ClInclude Include="vendor\Soup\soup\Callback.hpp" />
     <ClInclude Include="vendor\Soup\soup\Capture.hpp" />
