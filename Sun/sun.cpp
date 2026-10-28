@@ -800,7 +800,6 @@ int entry(std::vector<std::string>&& args, bool console)
 	if (args.size() > i
 		&& args[i].c_str()[0] != '+'
 		&& args[i] != "create"
-		&& args[i] != "set"
 		&& args[i] != "run"
 		)
 	{
