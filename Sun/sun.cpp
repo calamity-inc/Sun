@@ -760,6 +760,8 @@ int entry(std::vector<std::string>&& args, bool console)
 	SOUP_IF_UNLIKELY (args.size() > i
 		&& (args[i] == "help"
 			|| args[i] == "-?"
+			|| args[i] == "--help"
+			|| args[i] == "/?"
 			)
 		)
 	{
