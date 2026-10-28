@@ -16,6 +16,8 @@
 #include <soup/StringMatch.hpp>
 #include <soup/Thread.hpp>
 
+#define SUN_VERSION "0.6.0"
+
 #define E_OK			0
 #define E_BADARG		1
 #define E_LINKERR		2
@@ -794,6 +796,12 @@ int entry(std::vector<std::string>&& args, bool console)
 			std::cout << "\n";
 			return E_OK;
 		}
+	}
+
+	SOUP_IF_UNLIKELY (args.size() > i && args[i] == "--version")
+	{
+		std::cout << SUN_VERSION "\n";
+		return E_OK;
 	}
 
 	std::string projname{};
