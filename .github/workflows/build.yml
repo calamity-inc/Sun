@@ -120,10 +120,9 @@ jobs:
 
       - run: php scripts/test.php
 
-      - run: echo '{"path":["Sun.exe"]}' > .chocogen.json
-      - run: curl https://raw.githubusercontent.com/calamity-inc/chocogen/0b1c843eaa167caf590bd56f46f5a57f6ffc6000/chocogen.php -o chocogen.php
-      - run: php chocogen.php 0.6.0 # Bump me before making a new release!
-      - name: Upload Sun
+      - run: php scripts/bundle_nupkg.php
+
+      - name: Upload Chocolatey Package
         uses: actions/upload-artifact@v7
         with:
           name: "Windows (X64) Chocolatey Package"
