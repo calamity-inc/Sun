@@ -3,7 +3,7 @@ foreach (file("Sun/sun.cpp") as $line)
 {
 	if (substr($line, 0, 21) == "#define SUN_VERSION \"")
 	{
-		$sun_version = substr($line, 21, -2);
+		$sun_version = substr(trim($line), 21, -1);
 		break;
 	}
 }
