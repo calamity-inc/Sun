@@ -17,7 +17,26 @@ jobs:
       - name: Upload Sun
         uses: actions/upload-artifact@v7
         with:
-          name: "Debian 10 and above (X64)"
+          name: "Linux (X64)"
+          path: suncli
+
+      - run: php test.php
+
+  ubuntu-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build Soup
+        run: php Sun/vendor/Soup/build_lib.php
+
+      - name: Build Sun
+        run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
+
+      - name: Upload Sun
+        uses: actions/upload-artifact@v7
+        with:
+          name: "Linux (ARM64)"
           path: suncli
 
       - run: php test.php
