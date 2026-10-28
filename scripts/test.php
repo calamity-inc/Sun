@@ -1,7 +1,7 @@
 <?php
 chdir("examples");
 
-$sun = defined("PHP_WINDOWS_VERSION_MAJOR") ? "..\\..\\Sun.exe" : "../../suncli";
+$sun = defined("PHP_WINDOWS_VERSION_MAJOR") ? "..\\..\\Sun.exe" : "../../Sun/sun";
 
 function toexe($filename) {
 	if (defined("PHP_WINDOWS_VERSION_MAJOR")) {

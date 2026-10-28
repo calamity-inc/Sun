@@ -3,7 +3,7 @@ name: Build
 on: push
 
 jobs:
-  ubuntu-22-04:
+  ubuntu-x64:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v7
@@ -12,15 +12,23 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
+        run: clang -O3 -o Sun/sun Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
 
       - name: Upload Sun
         uses: actions/upload-artifact@v7
         with:
           name: "Linux (X64)"
-          path: suncli
+          path: Sun/sun
 
-      - run: php test.php
+      - run: php scripts/test.php
+
+      - run: php scripts/bundle_deb.php
+
+      - name: Upload .deb
+        uses: actions/upload-artifact@v7
+        with:
+          name: "Linux (X64) - .deb"
+          path: sun.*.deb
 
   ubuntu-arm64:
     runs-on: ubuntu-24.04-arm
@@ -31,15 +39,24 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
+        run: clang -O3 -o Sun/sun Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -fuse-ld=lld -lstdc++ -lstdc++fs -pthreads
 
       - name: Upload Sun
         uses: actions/upload-artifact@v7
         with:
           name: "Linux (ARM64)"
-          path: suncli
+          path: Sun/sun
 
-      - run: php test.php
+      - run: php scripts/test.php
+
+      - run: php scripts/bundle_deb.php
+
+      - name: Upload .deb
+        uses: actions/upload-artifact@v7
+        with:
+          name: "Linux (ARM64) - .deb"
+          path: sun.*.deb
+
 
   macos-x64:
     runs-on: macos-15-intel
@@ -50,15 +67,15 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -lc++
+        run: clang -O3 -o Sun/sun Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -lc++
 
       - name: Upload Sun
         uses: actions/upload-artifact@v7
         with:
           name: "MacOS (X64)"
-          path: suncli
+          path: Sun/sun
 
-      - run: php test.php
+      - run: php scripts/test.php
 
   macos-arm64:
     runs-on: macos-15
@@ -74,15 +91,15 @@ jobs:
         run: php Sun/vendor/Soup/build_lib.php
 
       - name: Build Sun
-        run: clang -O3 -o suncli Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -lc++
+        run: clang -O3 -o Sun/sun Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/libsoup.a -std=c++17 -lc++
 
       - name: Upload Sun
         uses: actions/upload-artifact@v7
         with:
           name: "MacOS (ARM64)"
-          path: suncli
+          path: Sun/sun
 
-      - run: php test.php
+      - run: php scripts/test.php
 
   windows-x64:
     runs-on: windows-latest
@@ -101,7 +118,7 @@ jobs:
           name: "Windows (X64)"
           path: Sun.exe
 
-      - run: php test.php
+      - run: php scripts/test.php
 
       - run: echo '{"path":["Sun.exe"]}' > .chocogen.json
       - run: curl https://raw.githubusercontent.com/calamity-inc/chocogen/0b1c843eaa167caf590bd56f46f5a57f6ffc6000/chocogen.php -o chocogen.php
@@ -129,4 +146,4 @@ jobs:
           name: "Windows (ARM64)"
           path: Sun.exe
 
-      - run: php test.php
+      - run: php scripts/test.php
