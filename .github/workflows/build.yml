@@ -84,7 +84,7 @@ jobs:
 
       - run: php test.php
 
-  windows-latest:
+  windows-x64:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -111,3 +111,22 @@ jobs:
         with:
           name: "Windows (X64) Chocolatey Package"
           path: ./*.nupkg
+
+  windows-arm64:
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build Soup
+        run: php Sun/vendor/Soup/build_lib.php
+
+      - name: Build Sun
+        run: clang -O3 -o Sun.exe Sun/sun.cpp -ISun/vendor/Soup Sun/vendor/Soup/soup.lib -std=c++17
+
+      - name: Upload Sun
+        uses: actions/upload-artifact@v7
+        with:
+          name: "Windows (ARM64)"
+          path: Sun.exe
+
+      - run: php test.php
